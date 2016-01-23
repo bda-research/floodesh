@@ -1,0 +1,31 @@
+{
+  "name": "floodesh",
+  "version": "0.0.1",
+  "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bda-research/floodesh"
+  },
+  "keywords": [
+    "nodejs",
+    "distributed",
+    "web",
+    "spider",
+    "crawler"
+  ],
+  "author": "Mike Chen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bda-research/floodesh/issues"
+  },
+  "homepage": "https://github.com/bda-research/floodesh",
+  "dependencies": {
+    "bottleneckp": "^1.0.0",
+    "commander": "^2.9.0",
+    "mof": "0.0.1"
+  }
+}
