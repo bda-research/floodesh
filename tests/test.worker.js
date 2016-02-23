@@ -45,17 +45,14 @@ let config = {
 };
 
 let worker = new Worker(config);
-const cheerio = require("cheerio");
+const cheerio = require("mof-cheerio");
 
 worker.responsemw.use( (ctx,next) => {
     ctx.content = ctx.body.toString();
     return next();
 })
 
-worker.responsemw.use( (ctx,next) => {
-    ctx.$= cheerio.load(ctx.content);
-    return next();
-})
+worker.responsemw.use(cheerio())
 
 worker.parsedmw.use( ctx => console.log("new task number: %d",ctx.tasks.length))
 
