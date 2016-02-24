@@ -1,5 +1,5 @@
 # floodesh
-Floodesh is a distributed web spider written with Nodejs.
+Floodesh is middleware based web spider written with Nodejs.
 
 # Install
 First install Gearman
