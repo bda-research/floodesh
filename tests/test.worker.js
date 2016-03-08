@@ -40,7 +40,10 @@ let config = {
     },
     schedule:{
 	concurrent: 10,
-	rate: 1000 // ms between every request
+	rate: 500 // ms between every request
+    },
+    request:{
+	retry:3
     }
 };
 

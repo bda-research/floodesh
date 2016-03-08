@@ -3,7 +3,7 @@
 
 function testspider(){
     this.name = "testspider";
-    this.seed = ["http://www.baidu.com/"];
+    this.seed = {uri:"http://127.0.0.1:1337/",timeout:1000};
 }
 
 testspider.prototype = {
@@ -14,12 +14,6 @@ testspider.prototype = {
     },
     
     onData:function(data,done){
-	if( data.length === 2 ){
-	    return done();
-	}
-	
-	let m = new Map(JSON.parse(data.toString()));
-	console.log("data: %s",m.get("title"));
 	done();
     },
     
