@@ -1,5 +1,7 @@
 # floodesh
-Floodesh is middleware based web spider written with Nodejs.
+Floodesh is middleware based web spider written with Nodejs. Floodesh is word of `flood` + `mesh`
+
+# Requirement
 
 # Install
 	
