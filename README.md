@@ -26,126 +26,126 @@ worker.responsemw.use( (ctx,next) => {
 
 ## Request
 
-__ctx.is(types)__
+###ctx.is(types)
   *  `type`s String|Array
   *  Return: String|false|null
 
 Check if the incoming request contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no request body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
-__ctx.querystring()__
+###ctx.querystring()
   *  String
 
 Get querystring.
 
-__ctx.idempotent__
+###ctx.idempotent
   *  Boolean
   
 Check if the request is idempotent.
 
-__ctx.search__
+###ctx.search
   *  String
   
 Get the search string. It includes the leading "?" compare to querystring.
 
-__ctx.method__
+###ctx.method
   *  String
   
 Get request method.
 
-__ctx.query__
+###ctx.query
   *  Object
   
 Get parsed query-string.
 
-__ctx.path__
+###ctx.path
   *  String
   
 Get the request pathname
 
-__ctx.url__
+###ctx.url
   *  String
   
 Return request url, the same as __ctx.href__.
 
-__ctx.origin__
+###ctx.origin
   *  String
   
 Get the origin of URL, for instance, "https://www.google.com".
 
-__ctx.protocol__
+###ctx.protocol
   *  String
   
 Return the protocol string "http" or "https"
 
-__ctx.host__
+###ctx.host
   * String, hostname:port
   
 Parse the "Host" header field host and support X-Forwarded-Host when a proxy is enabled.
 
-__ctx.hostname__
+###ctx.hostname
   * String
   
 Parse the "Host" header field hostname and support X-Forwarded-Host when a proxy is enabled.
 
-__ctx.secure__
+###ctx.secure
   * Boolean
   
 Check if protocol is https.
 
 ## Response
 
-__ctx.status__
+###ctx.status
   *  Number
   
 Get status code from response.
 
-__ctx.message__
+###ctx.message
   *  String
   
 Get status message from response.
 
-__ctx.body__
+###ctx.body
   *  Buffer
   
 Get the response body in Buffer.
 
-__ctx.length__
+###ctx.length
   *  Number
   
 Get length of response body.
 
-__ctx.type__
+###ctx.type
   *  String
   
 Get the response mime type, for instance, "text/html"
 
-__ctx.lastModifieds__
+###ctx.lastModifieds
   *  Date
   
 Get the Last-Modified date in Date form, if it exists.
 
-__ctx.etag__
+###ctx.etag
   *  String
   
 Get the ETag of a response.
 
-__ctx.header__
+###ctx.header
   *  Object
   
 Return the response header.
 
-__ctx.href__
+###ctx.href
   *  String
 
-__ctx.uri__
+###ctx.uri
   *  String
 
-__ctx.contentType__
+###ctx.contentType
   *  String
 
-__ctx.get(key)__
+###ctx.get(key)
   *  `key` String
-  *   Return: String
+  *  Return: String
   
 Get value by key in response headers
 
