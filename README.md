@@ -27,124 +27,125 @@ worker.responsemw.use( (ctx,next) => {
 ## Request
 
 __ctx.is(types)__
-  * `type`s <String|Array>
-  * Return: <String|false|null> 
+  *  `type`s String|Array
+  *  Return: String|false|null
+
 Check if the incoming request contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no request body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
 __ctx.querystring()__
-  * <String>
+  *  String
 
 Get querystring.
 
 __ctx.idempotent__
-  * <Boolean>
+  *  Boolean
   
 Check if the request is idempotent.
 
 __ctx.search__
-  * <String>
+  *  String
   
 Get the search string. It includes the leading "?" compare to querystring.
 
 __ctx.method__
-  * <String>
+  *  String
   
 Get request method.
 
 __ctx.query__
-  * <Object>
+  *  Object
   
 Get parsed query-string.
 
 __ctx.path__
-  * <String>
+  *  String
   
 Get the request pathname
 
 __ctx.url__
-  * <String>
+  *  String
   
 Return request url, the same as __ctx.href__.
 
 __ctx.origin__
-  * <String>
+  *  String
   
 Get the origin of URL, for instance, "https://www.google.com".
 
 __ctx.protocol__
-  * <String>
+  *  String
   
 Return the protocol string "http" or "https"
 
 __ctx.host__
-  * <String> hostname:port
+  * String, hostname:port
   
 Parse the "Host" header field host and support X-Forwarded-Host when a proxy is enabled.
 
 __ctx.hostname__
-  * <String>
+  * String
   
 Parse the "Host" header field hostname and support X-Forwarded-Host when a proxy is enabled.
 
 __ctx.secure__
-  * <Boolean>
+  * Boolean
   
 Check if protocol is https.
 
 ## Response
 
 __ctx.status__
-  *  <Number>
+  *  Number
   
 Get status code from response.
 
 __ctx.message__
-  * <String>
+  *  String
   
 Get status message from response.
 
 __ctx.body__
-  * <Buffer>
+  *  Buffer
   
 Get the response body in Buffer.
 
 __ctx.length__
-  * <Number>
+  *  Number
   
 Get length of response body.
 
 __ctx.type__
-  * <String>
+  *  String
   
 Get the response mime type, for instance, "text/html"
 
 __ctx.lastModifieds__
-  * <Date>
+  *  Date
   
 Get the Last-Modified date in Date form, if it exists.
 
 __ctx.etag__
-  * <String>
+  *  String
   
 Get the ETag of a response.
 
 __ctx.header__
-  * <Object>
+  *  Object
   
 Return the response header.
 
 __ctx.href__
-  * <String>
+  *  String
 
 __ctx.uri__
-  * <String>
+  *  String
 
 __ctx.contentType__
-  * <String>
+  *  String
 
 __ctx.get(key)__
-  * `key` <String>
-  *  Return: <String>
+  *  `key` String
+  *   Return: String
   
 Get value by key in response headers
 
