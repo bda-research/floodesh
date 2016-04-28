@@ -33,84 +33,104 @@ Check if the incoming request contains the "Content-Type" header field, and it c
 
 __ctx.querystring()__
   * <String>
+
 Get querystring.
 
 __ctx.idempotent__
   * <Boolean>
+  
 Check if the request is idempotent.
 
 __ctx.search__
   * <String>
+  
 Get the search string. It includes the leading "?" compare to querystring.
 
 __ctx.method__
   * <String>
+  
 Get request method.
 
 __ctx.query__
   * <Object>
+  
 Get parsed query-string.
 
 __ctx.path__
   * <String>
+  
 Get the request pathname
 
 __ctx.url__
   * <String>
+  
 Return request url, the same as __ctx.href__.
 
 __ctx.origin__
   * <String>
+  
 Get the origin of URL, for instance, "https://www.google.com".
 
 __ctx.protocol__
   * <String>
+  
 Return the protocol string "http" or "https"
 
 __ctx.host__
   * <String> hostname:port
+  
 Parse the "Host" header field host and support X-Forwarded-Host when a proxy is enabled.
 
 __ctx.hostname__
   * <String>
+  
 Parse the "Host" header field hostname and support X-Forwarded-Host when a proxy is enabled.
 
 __ctx.secure__
   * <Boolean>
+  
 Check if protocol is https.
 
 ## Response
 
 __ctx.status__
   *  <Number>
+  
 Get status code from response.
 
 __ctx.message__
   * <String>
+  
 Get status message from response.
 
 __ctx.body__
   * <Buffer>
+  
 Get the response body in Buffer.
 
 __ctx.length__
   * <Number>
+  
 Get length of response body.
 
 __ctx.type__
   * <String>
+  
 Get the response mime type, for instance, "text/html"
 
 __ctx.lastModifieds__
   * <Date>
+  
 Get the Last-Modified date in Date form, if it exists.
 
 __ctx.etag__
   * <String>
+  
 Get the ETag of a response.
 
 __ctx.header__
   * <Object>
+  
 Return the response header.
 
 __ctx.href__
@@ -125,6 +145,7 @@ __ctx.contentType__
 __ctx.get(key)__
   * `key` <String>
   *  Return: <String>
+  
 Get value by key in response headers
 
 
