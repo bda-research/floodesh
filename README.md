@@ -1,7 +1,19 @@
-# floodesh
+# Floodesh
 Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a combination of two words, `flood` and `mesh`.
 
 # Requirement
+ *  [Gearman Server](http://gearman.org/)
+ *  [MongoDB](https://www.mongodb.org/)
+
+## Gearman Server Installation
+Make sure `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been installed in you system.
+
+	wget https://launchpad.net/gearmand/1.2/1.1.12/+download/gearmand-1.1.12.tar.gz | tar zxf
+	cd gearmand-1.1.12
+	./configure
+	make
+	make install
+
 
 # Install
 	
@@ -12,7 +24,7 @@ Before you use floodesh make sure you have [gearman](http://gearman.org/) server
 
 	$ mkdir floodesh_demo
 	$ cd floodesh_demo
-	$ floodesh --init
+	$ floodesh init
 
 # Context
 A context instance is a kind of [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented by `Generators` which is [ECMAScript 6](http://es6-features.org/#GeneratorFunctionIteratorProtocol) feature. By context, we can access almost all fields in `response` and `request`, like:
@@ -151,12 +163,5 @@ Get value by key in response headers
 
 
 
-First install Gearman
 
-	wget https://launchpad.net/gearmand/1.2/1.1.12/+download/gearmand-1.1.12.tar.gz | tar zxf
-	cd gearmand-1.1.12
-	./configure
-	make
-	make install
 
-You may first install `libboost-all-dev`, `gperf`, `libevent-dev`, `uuid-dev`

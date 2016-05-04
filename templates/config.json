@@ -1,7 +1,8 @@
 {
     "production":{
 	"gearman":{
-	    "servers":[{"host":"10.144.30.246"},{"host":"10.252.25.62"},{"host":"10.163.100.116"}]
+	    "servers":[{"host":"10.144.30.246"},{"host":"10.252.25.62"},{"host":"10.163.100.116"}],
+	    "loadBalancing": "RoundRobin"
 	},
 	"mongodb":"mongodb://10.252.25.62:27017/gearman",
 	"schedule":{
