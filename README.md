@@ -20,11 +20,10 @@ Make sure `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been i
 	$ npm install floodesh
 
 # Useage
-Before you use floodesh make sure you have [gearman](http://gearman.org/) server running 	on localhost
 
 	$ mkdir floodesh_demo
 	$ cd floodesh_demo
-	$ floodesh init
+	$ floodesh init // all necessary files will be generated in your directory.
 
 # Context
 A context instance is a kind of [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented by `Generators` which is [ECMAScript 6](http://es6-features.org/#GeneratorFunctionIteratorProtocol) feature. By context, we can access almost all fields in `response` and `request`, like:
