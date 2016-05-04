@@ -20,6 +20,7 @@ Make sure `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been i
 	$ npm install floodesh
 
 # Useage
+Generate new app from templates by only one command.
 
 	$ mkdir floodesh_demo
 	$ cd floodesh_demo
