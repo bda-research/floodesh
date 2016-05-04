@@ -161,6 +161,15 @@ Return the response header.
 Get value by key in response headers
 
 
+# Middlewares
+ * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio). A simple wrapper of `Cheerio`
+ * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser). Parse `Charset`  in response headers
+ * [mof-iconv](https://www.npmjs.com/package/mof-iconv). Encoding converter middleware using `iconv` or `iconv-lite`
+ * [mof-reqnormalizer](https://www.npmjs.com/package/mof-normalizer).
+ * [mof-reqadapter](https://www.npmjs.com/package/mof-reqadapter).
+ * [mof-uarotate](https://www.npmjs.com/package/mof-uarotate).
+ * [mof-seenreq](https://www.npmjs.com/package/mof-seenreq). Only make sense in [flowesh](https://www.npmjs.com/package/flowesh), a simple wrapper of `seenreq`
+ * [mof-validbody](https://www.npmjs.com/package/mof-validbody).
 
 
 
