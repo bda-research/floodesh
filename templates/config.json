@@ -1,0 +1,22 @@
+{
+    "production":{
+	"gearman":{
+	    "servers":[{"host":"10.144.30.246"},{"host":"10.252.25.62"},{"host":"10.163.100.116"}]
+	},
+	"mongodb":"mongodb://10.252.25.62:27017/gearman",
+	"schedule":{
+	    "concurrent": 10,
+	    "rate": 1000
+	}
+    },
+    "development":{
+	"gearman":{
+	    "servers":[{"host":"192.168.98.116"}]
+	},
+	"mongodb":"mongodb://192.168.98.116:27017/test",
+	"schedule":{
+	    "concurrent": 10,
+	    "rate": 1000
+	}
+    }
+}

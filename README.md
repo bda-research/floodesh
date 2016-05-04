@@ -19,7 +19,7 @@ A context instance is a kind of [Finite-State Machine](https://en.wikipedia.org/
 
 ```javascript
 worker.responsemw.use( (ctx,next) => {
-	ctx.content = ctx.body.toString();
+	ctx.content = ctx.body.toString(); // totally do not care about the body 
 	return next();
 })
 ```
@@ -32,7 +32,7 @@ worker.responsemw.use( (ctx,next) => {
 
 Check if the incoming request contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no request body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
-### ctx.querystring()
+### ctx.querystring
   *  String
 
 Get querystring.
