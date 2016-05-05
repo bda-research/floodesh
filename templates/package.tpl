@@ -17,7 +17,8 @@ module.exports = `
     "dependencies":{
         "floodesh":"^0.2.12",
         "mof-cheerio":"^1.0.4",
-	"moment":"^2.12.0"
+	"moment":"^2.12.0",
+	"winston-daily-rotate-file": "*"
     },
     "devDependencies":{
         "mocha": "^2.4.5",

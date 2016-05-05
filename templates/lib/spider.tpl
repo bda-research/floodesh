@@ -6,7 +6,7 @@ module.exports =
 const logger = require('winston')
 const env = process.env.NODE_ENV || "development"
 
-logger.add(logger.transports.File, { filename: '/var/log/${appName}/spider.log' ,logstash:true,level:'info',handleExceptions:true});
+logger.add(require('winston-daily-rotate-file'), { datePattern:'yyyy-MM-dd',filename: '/var/log/${appName}/spider.log' ,logstash:true,level:'info',handleExceptions:true});
 
 if(env==="production"){
     logger.remove(logger.transports.Console);
