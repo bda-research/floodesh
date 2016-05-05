@@ -17,7 +17,7 @@ Make sure `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been i
 
 # Install
 	
-	$ npm install floodesh
+	$ npm install -g floodesh
 
 # Useage
 Generate new app from templates by only one command.
@@ -25,6 +25,7 @@ Generate new app from templates by only one command.
 	$ mkdir floodesh_demo
 	$ cd floodesh_demo
 	$ floodesh init // all necessary files will be generated in your directory.
+	$ npm install
 
 # Context
 A context instance is a kind of [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented by `Generators` which is [ECMAScript 6](http://es6-features.org/#GeneratorFunctionIteratorProtocol) feature. By context, we can access almost all fields in `response` and `request`, like:
