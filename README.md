@@ -1,3 +1,5 @@
+# V0.4.x API is different from earlier version, please do not upgrade your previous dependence.
+
 # Floodesh
 Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a combination of two words, `flood` and `mesh`.
 
@@ -6,9 +8,9 @@ Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a com
  *  [MongoDB](https://www.mongodb.org/)
 
 ## Gearman Server Installation
-Make sure `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been installed in you system.
+Make sure `g++`, `make`, `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been installed.
 
-	wget https://launchpad.net/gearmand/1.2/1.1.12/+download/gearmand-1.1.12.tar.gz | tar zxf
+	wget https://launchpad.net/gearmand/1.2/1.1.12/+download/gearmand-1.1.12.tar.gz | tar xvf
 	cd gearmand-1.1.12
 	./configure
 	make
@@ -38,12 +40,6 @@ worker.responsemw.use( (ctx,next) => {
 ```
 
 ## Request
-
-### ctx.is(types)
-  *  `type`s String|Array
-  *  Return: String|false|null
-
-Check if the incoming request contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no request body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
 ### ctx.querystring
   *  String
@@ -88,7 +84,7 @@ Get the origin of URL, for instance, "https://www.google.com".
 ### ctx.protocol
   *  String
   
-Return the protocol string "http" or "https"
+Return the protocol string "http" or "https".
 
 ### ctx.host
   * String, hostname:port
@@ -147,21 +143,20 @@ Get the ETag of a response.
   
 Return the response header.
 
-### ctx.href
-  *  String
-
-### ctx.uri
-  *  String
-
 ### ctx.contentType
   *  String
 
 ### ctx.get(key)
   *  `key` String
   *  Return: String
-  
+
 Get value by key in response headers
 
+### ctx.is(types)
+  *  `type`s String|Array
+  *  Return: String|false|null
+
+Check if the incoming response contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no response body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
 # Middlewares
  * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio). A simple wrapper of `Cheerio`

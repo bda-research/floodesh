@@ -15,7 +15,7 @@ module.exports = `
     "web"
     ],
     "dependencies":{
-        "floodesh":"^0.2.12",
+        "floodesh":"^0.3.3",
         "mof-cheerio":"^1.0.4",
 	"moment":"^2.12.0",
 	"winston-daily-rotate-file": "*"
