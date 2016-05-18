@@ -20,8 +20,7 @@ ${appName}.prototype = {
 	return ["https://www.google.com/","http://www.amazon.com/"];
     },
     onData:function(data,done){
-	let m = new Map(JSON.parse(data.toString()));
-	this.output.write(m.get('data'))
+	this.output.write(data.get('data'))
 	done();
     },
     
