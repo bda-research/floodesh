@@ -110,7 +110,8 @@ describe('Worker',function(){
 	    ctx  = {
 		parse:(ctx,done)=>{
 		    done();
-		}
+		},
+		performance:{}
 	    };
 	    w.emit = sinon.spy();
 	});
@@ -161,7 +162,7 @@ describe('Worker',function(){
     describe('#_send',()=>{
 	let ctx;
 	beforeEach(()=>{
-	    ctx = {request:{},response:{}};
+	    ctx = {request:{},response:{}, performance:{}};
 	    ctx.opt={uri:"https://www.baidu.com/"};
 	    ctx.done=()=>{};
 	    w.removeAllListeners('responding');
@@ -178,7 +179,7 @@ describe('Worker',function(){
 	    w.on('responding', ctx => {
 		should.exists(ctx.request.req);
 		should.exists(ctx.response.res);
-		ctx.request.req.should.be.an.instanceof(http.ClientRequest);
+		ctx.request.req.should.be.an.instanceof(request.Request);
 		ctx.response.res.should.be.an.instanceof(http.IncomingMessage);
 		done();
 	    });
