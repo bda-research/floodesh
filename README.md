@@ -19,14 +19,14 @@ Make sure `g++`, `make`, `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-d
 
 # Install
 	
-	$ npm install -g floodesh
+	$ npm install -g floodesh-cli
 
 # Useage
 Generate new app from templates by only one command.
 
 	$ mkdir floodesh_demo
 	$ cd floodesh_demo
-	$ floodesh init // all necessary files will be generated in your directory.
+	$ floodesh-cli init // all necessary files will be generated in your directory.
 	$ npm install
 
 # Context
