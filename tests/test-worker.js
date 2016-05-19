@@ -6,7 +6,7 @@ const sinon = require('sinon')
 require('should-sinon')
 const Worker = require('..').Worker
 const Client = require('..').Client
-const Core = require('../lib/core')
+const Core = require('floodesh-lib')
 const events = require('events')
 const http = require('http')
 const request = require('request')

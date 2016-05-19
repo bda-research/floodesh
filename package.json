@@ -1,48 +1,48 @@
 {
-    "name": "floodesh",
-    "version": "0.4.2",
-    "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
-    "bin": "./bin/floodesh",
-    "main": "index.js",
-    "scripts": {
-	"test": "./node_modules/mocha/bin/mocha --reporter spec --bail --timeout 10000 tests/test-worker.js"
-    },
-    "repository": {
-	"type": "git",
-	"url": "https://github.com/bda-research/floodesh"
-    },
-    "keywords": [
-	"nodejs",
-	"distributed",
-	"web",
-	"spider",
-	"crawler"
-    ],
-    "author": "Mike Chen",
-    "license": "ISC",
-    "bugs": {
-	"url": "https://github.com/bda-research/floodesh/issues"
-    },
-    "homepage": "https://github.com/bda-research/floodesh",
-    "dependencies": {
-	"request": "^2.69.0",
-	"bottleneckp": "^1.0.0",
-	"delegates": "^1.0.0",
-	"commander": "^2.9.0",
-	"content-type": "^1.0.1",
-	"gearman-node-bda": "^0.9.5",
-	"lodash": "^4.0.1",
-	"mof": "0.1.0",
-	"mongodb": "^2.1.4",
-	"statuses": "^1.2.1",
-	"type-is": "^1.6.10",
-	"winston": "^2.1.1"
-    },
-    "devDependencies": {
-	"mocha": "^2.4.5",
-	"mof-cheerio": "^1.0.1",
-	"should": "^8.2.1",
-	"should-sinon": "0.0.5",
-	"sinon": "^1.17.3"
-    }
+  "name": "floodesh",
+  "version": "0.5.0",
+  "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha --reporter spec --bail --timeout 10000 tests/test-worker.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bda-research/floodesh"
+  },
+  "keywords": [
+    "nodejs",
+    "distributed",
+    "web",
+    "spider",
+    "crawler"
+  ],
+  "author": "Mike Chen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bda-research/floodesh/issues"
+  },
+  "homepage": "https://github.com/bda-research/floodesh",
+  "dependencies": {
+    "bottleneckp": "^1.0.0",
+    "commander": "^2.9.0",
+    "content-type": "^1.0.1",
+    "delegates": "^1.0.0",
+    "floodesh-lib": "^1.0.0",
+    "gearman-node-bda": "^0.9.5",
+    "lodash": "^4.0.1",
+    "mof": "0.1.0",
+    "mongodb": "^2.1.4",
+    "request": "^2.69.0",
+    "statuses": "^1.2.1",
+    "type-is": "^1.6.10",
+    "winston": "^2.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^2.4.5",
+    "mof-cheerio": "^1.0.1",
+    "should": "^8.2.1",
+    "should-sinon": "0.0.5",
+    "sinon": "^1.17.3"
+  }
 }
