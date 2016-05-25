@@ -11,6 +11,10 @@
  */
 
 module.exports = {
-    Worker:require('./lib/worker.js'),
-    Client:require('./lib/client.js')
+    get Worker(){
+	return require('./lib/worker.js');
+    },
+    get Client(){
+	return require('./lib/client.js');
+    }
 }

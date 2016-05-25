@@ -11,7 +11,8 @@
 	},
 	"request":{
 	    "retry":3
-	}
+	},
+	"seenreq": {}
     },
     "development":{
 	"gearman":{
@@ -24,6 +25,7 @@
 	},
 	"request":{
 	    "retry":3
-	}
+	},
+	"seenreq": {}
     }
 }
