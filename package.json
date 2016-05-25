@@ -23,6 +23,9 @@
     "url": "https://github.com/bda-research/floodesh/issues"
   },
   "homepage": "https://github.com/bda-research/floodesh",
+    "engine-strict": {
+	"node": ">=4.0.0"
+    },
   "dependencies": {
     "bottleneckp": "^1.0.0",
     "commander": "^2.9.0",
