@@ -1,6 +1,6 @@
 {
   "name": "floodesh",
-  "version": "0.5.11",
+  "version": "0.6.0",
   "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
   "main": "index.js",
   "scripts": {
@@ -23,15 +23,16 @@
     "url": "https://github.com/bda-research/floodesh/issues"
   },
   "homepage": "https://github.com/bda-research/floodesh",
-    "engine-strict": {
-	"node": ">=4.0.0"
-    },
+  "engine-strict": {
+    "node": ">=4.0.0"
+  },
   "dependencies": {
     "bottleneckp": "^1.0.0",
     "commander": "^2.9.0",
     "content-type": "^1.0.1",
+    "debug": "^2.2.0",
     "delegates": "^1.0.0",
-    "floodesh-lib": "^1.0.0",
+    "floodesh-lib": "^1.0.2",
     "gearman-node-bda": "^0.9.6",
     "lodash": "^4.0.1",
     "mof": "0.1.0",
