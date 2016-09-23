@@ -12,9 +12,9 @@
 
 module.exports = {
     get Worker(){
-	return require('./lib/worker.js');
+	return require('./worker/');
     },
     get Client(){
-	return require('./lib/client.js');
+	return require('./client/');
     }
 }

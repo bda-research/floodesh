@@ -1,6 +1,6 @@
 {
   "name": "floodesh",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
   "main": "index.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "content-type": "^1.0.1",
     "debug": "^2.2.0",
     "delegates": "^1.0.0",
-    "floodesh-lib": "^1.0.2",
+    "floodesh-lib": "1.0.3",
     "gearman-node-bda": "^0.9.6",
     "lodash": "^4.0.1",
     "mof": "0.1.0",

@@ -2,7 +2,6 @@
 'use strict';
 
 const Core = require('floodesh-lib')
-const request = require('request')
 const gearman = require("gearman-node-bda")
 const functionsIn = require("lodash/functionsIn")
 const debug = require("debug")("floodesh-worker")
@@ -12,45 +11,10 @@ module.exports = class Worker extends Core{
 	super();
 	this.config = config;
 	delete this.config.gearman.loadBalancing;
+
+	return this;
     }
     
-    /* 
-     * Send request
-     * 
-     * @ctx context
-     *
-     * @api private
-     */
-    _send(ctx){
-	let self = this;
-	debug("sending request:" + JSON.stringify(ctx.opt));
-	ctx.performance.requestTimestamp = Date.now();
-	let req = request(ctx.opt, (err,res) => {
-	    ctx.performance.responseTimestamp = Date.now();
-	    if(err) {
-		console.error(err.stack); // done: may lead to crash `uncaughtException: EIO: i/o error, write` #3 solved
-		ctx.done();// tell scheduler to release a resource
-		
-		let opt = ctx.opt, r = opt.retries;
-		opt.parse = ctx.parse;
-		ctx = null;
-		opt.priority = self.retryPriority;
-		if(0 === r)
-		    return self.emit('error.request',err);
-		
-		opt.retries = r ? r-1 : self.config.request.retry;
-		process.nextTick(()=>self.enqueue(opt));
-		return;
-	    }
-	    
-	    ctx.response.res = res;
-	    ctx.request.req = res.request; // attach an instance of `Request` while got response, need see if it is necessary.
-	    self.emit("responding",ctx);
-	});
-	
-	//ctx.request.req = req; // req is an instance of `Request`, which is an Object in `request` module.
-    }
-
     /*
      * Pase the response body, 
      * @ctx context
@@ -61,8 +25,8 @@ module.exports = class Worker extends Core{
     _parse(ctx){
 	debug("parsing");
 	let self = this;
-	ctx.performance.responsemwTimestamp = Date.now();
-	ctx.parse.call( this.app,ctx, () => self.emit("parsed",ctx) );
+	//ctx.performance.responsemwTimestamp = Date.now();
+	//ctx.parse.call( this.app,ctx, () => self.emit("parsed",ctx) );
     }
 
     /* send back ctx.dataSet to client, serialize first
@@ -141,7 +105,7 @@ module.exports = class Worker extends Core{
 	this._w = gearman.worker(this.config.gearman)//register worker to master
 	this.retryPriority = 10;
 	this._hookSIG();
-	this.initializeScheduler(this.config.schedule);
+	//this.initializeScheduler(this.config.schedule);
 	
 	functionsIn(this.app).forEach( fnKey => this._w.addFunction(this.app.name+"_"+fnKey, this._onJob(fnKey) ), this);//bind functions
         

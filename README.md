@@ -158,6 +158,29 @@ Get value by key in response headers
 
 Check if the incoming response contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no response body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
+## Other
+
+
+### tasks
+	* Array
+
+Array of pending crawling tasks. A task is an object consists of [Options](https://github.com/request/request#requestoptions-callback) and `next`, `next` is a function name in your spider you want to call in next task , Supported format:
+
+	* ```{
+		opt:[Options](https://github.com/request/request#requestoptions-callback),
+		next:String
+	}```
+
+	* ```{
+		opt:String
+	}```
+	
+	* `[Options](https://github.com/request/request#requestoptions-callback)`
+### dataSet
+	* Map
+
+`dataSet` is a map to store result, that will be parsed and saved by floodesh.
+
 # Middlewares
  * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio). A simple wrapper of `Cheerio`
  * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser). Parse `Charset`  in response headers
