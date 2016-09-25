@@ -4,7 +4,7 @@
   "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --reporter spec --bail --timeout 10000 tests/test-worker.js"
+    "test": "./node_modules/mocha/bin/mocha --reporter spec --bail --timeout 10000 tests/test.basic.js"
   },
   "repository": {
     "type": "git",
