@@ -1,0 +1,6 @@
+{
+  "name": "testapp",
+  "version": "0.7.0",
+  "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
+  "main": "index.js"
+}

@@ -6,17 +6,28 @@ const gearman = require("gearman-node-bda")
 const functionsIn = require("lodash/functionsIn")
 const debug = require("debug")("floodesh-worker")
 const path = require('path')
-
+const fs = require('fs')
+const env = process.env.NODE_ENV || "development"
 
 
 module.exports = class Worker extends Core {
     constructor(options){
 	super();
-	this.config = require(path.join(process.cwd(),'config'))
+	this.config = require(path.join(process.cwd(),'config'))[env];
 	delete this.config.gearman.loadBalancing;
+	let pkg = require(path.join(process.cwd(),'package'));
+	this.name = pkg.name;
+	this.version = pkg.version;
+	console.log("name=%s",this.name);
+	console.log("version=%s", this.version);
+
+	let parserDir = path.join(process.cwd(),'lib','parser');
+	this.parsers = Object.create(null);
+	fs.readdirSync(parserDir).filter(name=>name.match(/\.js$/)).forEach(name=> this.parsers[name]=require(path.join(parserDir,name)),this);
+	
+	console.log(this.parsers);
 	
 	this._init();
-	this._registerParser(options.functions);
     }
     
     /*
@@ -26,9 +37,12 @@ module.exports = class Worker extends Core {
      * @api private
      *
      */
-    _parse(ctx){
-	debug("parsing");
-	let self = this;
+    parse(){
+	return (ctx, next)=>{
+	    debug("parsing");
+	    return ctx.app.parsers[ctx.funcName](ctx, next);
+	};
+	
 	//ctx.performance.responsemwTimestamp = Date.now();
 	//ctx.parse.call( this.app,ctx, () => self.emit("parsed",ctx) );
     }
@@ -71,8 +85,8 @@ module.exports = class Worker extends Core {
     _onJob(fname){
 	let self = this;
 	this.use((ctx, next) => {
-	    ctx.parser = fname;
-	    console.log("middleware: %s", fname);
+	    ctx.funcName = fname;
+	    console.log("register func: %s", fname);
 	    return next();
 	});
 	
@@ -109,21 +123,16 @@ module.exports = class Worker extends Core {
     }
 
     _register2Server(){
-	return {
-	    addFunction:(name,fn)=>{
-		console.log("add function: %s",name);
-	    }
-	}
-	//return gearman.worker(this.config.gearman);
+	return gearman.worker(this.config.gearman);
     }
 
-    _registerParser(names){
+    _registerFunctions(names){
 	if(!(names instanceof Array)){
 	    names = [names];
 	}
 	
 	for(let i=0;i<names.length;i++){
-	    this._w.addFunction('app name_'+names[i], this._onJob(names[i]));
+	    this._w.addFunction(this.name+'_'+names[i], this._onJob(names[i]));
 	}
     }
     
@@ -138,7 +147,9 @@ module.exports = class Worker extends Core {
 	this._hookSIG();
 
 	//this.initializeScheduler(this.config.schedule);
+
 	
+	this._registerFunctions(Object.keys(this.parsers));
 	//functionsIn(this.app).forEach( fnKey => this._w.addFunction(this.app.name+"_"+fnKey, this._onJob(fnKey) ), this);//bind functions
         
 	this.on("complete", this._back.bind(this) )
@@ -180,11 +191,4 @@ module.exports = class Worker extends Core {
 	this.app = app;
 	return this;
     }
-
-    /*
-     * 
-     */
-    get name(){
-	return this.app.name;
-    }
-}
+ }
