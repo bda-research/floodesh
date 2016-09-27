@@ -3,29 +3,27 @@
 
 const Core = require('floodesh-lib')
 const gearman = require("gearman-node-bda")
-const functionsIn = require("lodash/functionsIn")
 const debug = require("debug")("floodesh-worker")
 const path = require('path')
 const fs = require('fs')
 const env = process.env.NODE_ENV || "development"
 
-
 module.exports = class Worker extends Core {
-    constructor(options){
+    constructor(){
 	super();
+	let pkg = require(path.join(process.cwd(),'package'));
+	let parserDir = path.join(process.cwd(),'lib','parser');
+	
 	this.config = require(path.join(process.cwd(),'config'))[env];
 	delete this.config.gearman.loadBalancing;
-	let pkg = require(path.join(process.cwd(),'package'));
+	
 	this.name = pkg.name;
 	this.version = pkg.version;
-	console.log("name=%s",this.name);
-	console.log("version=%s", this.version);
-
-	let parserDir = path.join(process.cwd(),'lib','parser');
-	this.parsers = Object.create(null);
-	fs.readdirSync(parserDir).filter(name=>name.match(/\.js$/)).forEach(name=> this.parsers[name]=require(path.join(parserDir,name)),this);
 	
-	console.log(this.parsers);
+	this.parsers = Object.create(null);
+	fs.readdirSync(parserDir)
+	    .filter(name=>name.match(/\.js$/))
+	    .forEach(name=> this.parsers[name.replace(/\.js$/,'')]=require(path.join(parserDir,name)),this);
 	
 	this._init();
     }
@@ -40,7 +38,8 @@ module.exports = class Worker extends Core {
     parse(){
 	return (ctx, next)=>{
 	    debug("parsing");
-	    return ctx.app.parsers[ctx.funcName](ctx, next);
+	    debug("funcName: "+ctx.func);
+	    return ctx.app.parsers[ctx.func](ctx, next);
 	};
 	
 	//ctx.performance.responsemwTimestamp = Date.now();
@@ -55,26 +54,18 @@ module.exports = class Worker extends Core {
     _back(ctx){
 	debug("work complete to server");
 	if(ctx.dataSet.size > 0){
-	    (!this._w.closed) && this._job.sendWorkData( JSON.stringify([...ctx.dataSet]) );
+	    (!this._w.closed) && ctx.job.sendWorkData( JSON.stringify([...ctx.dataSet]) );
 	}
 	
-	(!this._w.closed) && this._job.workComplete( JSON.stringify(ctx.tasks) );
-    }
-
-    /* Entry of worker.
-     *
-     *  @api public
-     **/
-    start(){
-	this._init();
+	(!this._w.closed) && ctx.job.workComplete( JSON.stringify(ctx.tasks) );
     }
 
     /* Job parser from `String` to `Object` (also deserialize)
      *
      *  @api private
      */
-    _parseJobArgv(){
-	return JSON.parse(this._job.payload.toString());
+    _parseJobArgv(job){
+	return JSON.parse(job.payload.toString());
     }
 
     /* Common processing function for Gearman Worker,
@@ -84,20 +75,26 @@ module.exports = class Worker extends Core {
      */
     _onJob(fname){
 	let self = this;
-	this.use((ctx, next) => {
-	    ctx.funcName = fname;
-	    console.log("register func: %s", fname);
-	    return next();
-	});
 	
 	return function(job){
-	    self._job = job;
-	    let opt = self._parseJobArgv();
-	    //opt.parse = self.app[fname]; //bind parser provided by spider, default for `parser`
-	    
-	    
-	    self.enqueue(opt);// notify core to schedule the `options`
+	    let opt = self._parseJobArgv(job);
+	    let ctx = self.enqueue(opt);
+	    ctx.func = fname;
+	    ctx.job = job;
 	}
+    }
+
+    _retry(ctx){
+	let opt=ctx.opt,r = opt.retries;
+	opt.priority = this.retryPriority;
+	opt.retries = r ? r-1 : this.config.retry;
+	
+	console.log(ctx);
+	
+	let newCtx = this.enqueue(opt);
+	newCtx.func = ctx.func;
+	newCtx.job = ctx.job;
+	ctx=null;
     }
     
     /* Hook process signal (current is INT)
@@ -150,9 +147,8 @@ module.exports = class Worker extends Core {
 
 	
 	this._registerFunctions(Object.keys(this.parsers));
-	//functionsIn(this.app).forEach( fnKey => this._w.addFunction(this.app.name+"_"+fnKey, this._onJob(fnKey) ), this);//bind functions
         
-	this.on("complete", this._back.bind(this) )
+	this.on("complete", this._onComplete.bind(this) )
 	    .on('error', this._onError.bind(this))
 //	    .on("request", this._send.bind(this) )
 //	    .on("response", this._parse.bind(this) )
@@ -164,31 +160,41 @@ module.exports = class Worker extends Core {
 	//     self._onError(new Error(msg));
 	// });
     }
-    
+
+    _onComplete(ctx){
+	//ctx.releaseBtlneck();
+	this._back(ctx);
+    }
+
     /* default erorr handler for `Worker`
      *  should send message to server to end current job.
      * 
      */
-    _onError(e){
+    _onError(e, ctx){
 	if(e instanceof Error){
 	    console.error(e.stack);
 	}else{
 	    console.error(e);
 	}
 	
-	(!this._w.closed) && this._job.workComplete( JSON.stringify([]) );
-    }
-
-    get job(){
-	return this._job;
-    }
-    
-    /* Attach customer's app which should subscribe events: `request`, `response`, `process`
-     *  
-     * @api public
-     */
-    attach(app){
-	this.app = app;
-	return this;
+	console.log("_onError: %s",e.code);
+	console.log("1111111111111111111");
+	console.log("_onError: %j",ctx.opt);
+	
+	switch(e.code){
+	case "ETIMEDOUT":
+	case "ENETRESET":
+	case "ECONNRESET":
+	case "ECONNABORTED":
+	    if(0 === ctx.opt.retries){
+		break;
+	    }else{
+		return this._retry(ctx);
+	    }
+	default:
+	    break;
+	}
+	
+	(!this._w.closed) && ctx.job.reportException( JSON.stringify([]) );
     }
  }

@@ -5,7 +5,7 @@ const fs = require('fs')
 
 function iwjw(){
     this.name = "testapp";
-    this.seed = ["http://www.baidu.com", "http://www.163.com", "http://www.qq.com"];
+    this.seed = [{opt:{uri:"http://www.baidu.com"},next:'home'}, {opt:{uri:"http://www.iwjw.com"}, next:"home"},{opt:"http://www.163.com",next:"home"}];
 }
 
 iwjw.prototype = {

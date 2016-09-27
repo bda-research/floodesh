@@ -33,7 +33,7 @@
     "debug": "^2.2.0",
     "delegates": "^1.0.0",
     "floodesh-lib": "1.0.3",
-    "gearman-node-bda": "^0.9.6",
+    "gearman-node-bda": "^0.9.7",
     "lodash": "^4.0.1",
     "mof": "0.1.0",
     "mongodb": "^2.1.4",

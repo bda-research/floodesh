@@ -10,42 +10,60 @@ const Client = require('../client')
 const App = require('./client.js')
 const bottleneck = require('mof-bottleneck')
 const request = require('mof-request')
+const cheerio = require('mof-cheerio')
+const iconv = require('mof-iconv')
 const co = require('co')
 
 describe('worker', ()=>{
+    process.chdir(path.join(process.cwd(),'tests'));
+    let worker;
     beforeEach(() => {
-	
+	worker = new Worker();
     });
 
     it("should new a worker", (done)=> {
-	process.chdir(path.join(process.cwd(),'tests'));
-	let options = {};
-	let worker = new Worker(options);
-	
-	worker.use((ctx, next) => {
-	    console.log("before bottleneck");
-	    console.log(ctx.opt);
-	    return next();
-	});
+	let globalOptions = {};
+	let i = 0;
 	
 	worker.use(co.wrap(bottleneck({rate:0,concurrent:1})));
-	let globalOptions = {};
 	worker.use(co.wrap(request(globalOptions)));
-	    
-	worker.use((ctx, next) => {
-	    console.log('got response %d', ctx.body.length);
-	    return next();
-	});
-
+	worker.use(iconv());
+	worker.use(cheerio());
 	worker.use(worker.parse());
 	
-	worker.use((ctx, next)=> {
-	    ctx.releaseBtlneck();
-	    return next();
-	})
-	
-	new Client(require('./config.js')['production']).attach(new App()).start();
+	new Client(require('./config.js')['development']).attach(new App()).start();
+	worker.on("complete", ()=>{
+	    if(++i===3){
+		worker._exit();
+		done();
+	    }
+	});
 	//worker.start();
 	//worker._onJob('parse')({payload:'{"uri":"http://www.baidu.com"}'});
-    })
+    });
+
+    it('should retry when time out', done=>{
+	let getError = ()=>{
+	    let e = new Error();
+	    e.code = 'ETIMEDOUT';
+	    return e;
+	};
+	
+	worker.use((ctx, next)=>{
+	    should.exist(ctx.opt);
+	    console.log("middleware: %j", ctx.opt);
+	    should.exist(ctx.opt.retries);
+	    
+	    return next();
+	});
+	
+	// worker.use((ctx, next)=>{
+	//     let e = getError();
+	//     throw e;
+	//     return next();
+	// });
+	
+	worker.on('complete', ctx=> done());
+	worker.emit("error",getError(),{opt:{uri:"http://www.baidu.com"}, app:{},request:{}, response:{},job:{workComplete:function(){},reportException:function(){}}});
+    });
 });
