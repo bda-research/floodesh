@@ -89,8 +89,6 @@ module.exports = class Worker extends Core {
 	opt.priority = this.retryPriority;
 	opt.retries = r ? r-1 : this.config.retry;
 	
-	console.log(ctx);
-	
 	let newCtx = this.enqueue(opt);
 	newCtx.func = ctx.func;
 	newCtx.job = ctx.job;
@@ -176,10 +174,6 @@ module.exports = class Worker extends Core {
 	}else{
 	    console.error(e);
 	}
-	
-	console.log("_onError: %s",e.code);
-	console.log("1111111111111111111");
-	console.log("_onError: %j",ctx.opt);
 	
 	switch(e.code){
 	case "ETIMEDOUT":
