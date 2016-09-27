@@ -1,6 +1,6 @@
 {
   "name": "floodesh",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
   "main": "index.js",
   "scripts": {
@@ -32,10 +32,10 @@
     "content-type": "^1.0.1",
     "debug": "^2.2.0",
     "delegates": "^1.0.0",
-    "floodesh-lib": "1.0.3",
+    "floodesh-lib": "1.1.0",
     "gearman-node-bda": "^0.9.7",
     "lodash": "^4.0.1",
-    "mof": "0.1.0",
+    "mof": "0.1.1",
     "mongodb": "^2.1.4",
     "request": "^2.69.0",
     "seenreq": "^0.1.7",
@@ -46,9 +46,9 @@
   "devDependencies": {
     "co": "^4.6.0",
     "mocha": "^2.4.5",
-    "mof-bottleneck": "file:///root/Projects/mof-bottleneck",
+    "mof-bottleneck": "0.1.0",
     "mof-cheerio": "^1.0.1",
-    "mof-request": "file:///root/Projects/mof-request",
+    "mof-request": "0.1.0",
     "should": "^8.2.1",
     "should-sinon": "0.0.5",
     "sinon": "^1.17.3"
