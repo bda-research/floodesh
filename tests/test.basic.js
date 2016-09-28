@@ -14,16 +14,27 @@ const cheerio = require('mof-cheerio')
 const iconv = require('mof-iconv')
 const co = require('co')
 
-describe('worker', ()=>{
+describe('Test worker in floodesh', ()=>{
     process.chdir(path.join(process.cwd(),'tests'));
     let worker;
     beforeEach(() => {
-	worker = new Worker();
+	
     });
 
+    it('should load config file', ()=>{
+	worker = new Worker();
+	should.exist(worker.config.logBaseDir);
+	should.exist(worker.config.retry);
+	should.exist(worker.config.gearman);
+	should.exist(worker.config.logger);
+	should.exist(worker.config.mongodb);
+	worker._exit();
+    });
+    
     it("should new a worker", (done)=> {
 	let globalOptions = {};
 	let i = 0;
+	worker = new Worker();
 	
 	worker.use(co.wrap(bottleneck({rate:0,concurrent:1})));
 	worker.use(co.wrap(request(globalOptions)));
@@ -43,6 +54,7 @@ describe('worker', ()=>{
     });
 
     it('should retry when time out', done=>{
+	worker = new Worker();
 	let getError = ()=>{
 	    let e = new Error();
 	    e.code = 'ETIMEDOUT';
@@ -56,7 +68,7 @@ describe('worker', ()=>{
 	    
 	    return next();
 	});
-	
+	worker.use(co.wrap(request()));
 	// worker.use((ctx, next)=>{
 	//     let e = getError();
 	//     throw e;

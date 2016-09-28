@@ -1,9 +1,9 @@
 
 'use strict';
 
+const winston = require('winston')
 const Core = require('floodesh-lib')
 const gearman = require("gearman-node-bda")
-const debug = require("debug")("floodesh-worker")
 const path = require('path')
 const fs = require('fs')
 const env = process.env.NODE_ENV || "development"
@@ -13,13 +13,19 @@ module.exports = class Worker extends Core {
 	super();
 	let pkg = require(path.join(process.cwd(),'package'));
 	let parserDir = path.join(process.cwd(),'lib','parser');
+	let configDir = path.join(process.cwd(),'config', env);
+	this.config = require(configDir);
 	
-	this.config = require(path.join(process.cwd(),'config'))[env];
+	fs.readdirSync(configDir)
+	    .filter(name=>name.slice(0,5)!=="index" && name.match(/\.js$/))
+	    .forEach(name => this.config[name.replace(/\.js$/,'')]=require(path.join(configDir,name)),this);
+	
 	delete this.config.gearman.loadBalancing;
 	
 	this.name = pkg.name;
 	this.version = pkg.version;
 	
+	this.logger = winston.loggers.get("floodesh");
 	this.parsers = Object.create(null);
 	fs.readdirSync(parserDir)
 	    .filter(name=>name.match(/\.js$/))
@@ -37,8 +43,7 @@ module.exports = class Worker extends Core {
      */
     parse(){
 	return (ctx, next)=>{
-	    debug("parsing");
-	    debug("funcName: "+ctx.func);
+	    ctx.app.logger.debug("Start parsing: %s",ctx.func);
 	    return ctx.app.parsers[ctx.func](ctx, next);
 	};
 	
@@ -52,7 +57,7 @@ module.exports = class Worker extends Core {
      */
     
     _back(ctx){
-	debug("work complete to server");
+	this.logger.debug("Work complete: %s", ctx.url);
 	if(ctx.dataSet.size > 0){
 	    (!this._w.closed) && ctx.job.sendWorkData( JSON.stringify([...ctx.dataSet]) );
 	}
@@ -78,6 +83,9 @@ module.exports = class Worker extends Core {
 	
 	return function(job){
 	    let opt = self._parseJobArgv(job);
+
+	    self.logger.debug("New Job",opt);
+	    
 	    let ctx = self.enqueue(opt);
 	    ctx.func = fname;
 	    ctx.job = job;
@@ -88,6 +96,8 @@ module.exports = class Worker extends Core {
 	let opt=ctx.opt,r = opt.retries;
 	opt.priority = this.retryPriority;
 	opt.retries = r ? r-1 : this.config.retry;
+	
+	this.logger.debug("Retries: %d, %s", opt.retries, opt.uri);
 	
 	let newCtx = this.enqueue(opt);
 	newCtx.func = ctx.func;
@@ -112,7 +122,7 @@ module.exports = class Worker extends Core {
     _exit(){
 	let self = this;
 	(!this._w.closed) && this._w.resetAbilities( (e) =>{
-	    if(e) console.error(e.stack);
+	    if(e) self.logger.error(e.stack);
 	    self._w.close();
 	});
     }
@@ -170,9 +180,9 @@ module.exports = class Worker extends Core {
      */
     _onError(e, ctx){
 	if(e instanceof Error){
-	    console.error(e.stack);
+	    this.logger.error(e.stack);
 	}else{
-	    console.error(e);
+	    this.logger.error(e);
 	}
 	
 	switch(e.code){
@@ -189,6 +199,6 @@ module.exports = class Worker extends Core {
 	    break;
 	}
 	
-	(!this._w.closed) && ctx.job.reportException( JSON.stringify([]) );
+	(!this._w.closed) && ctx.job.reportException( JSON.stringify(e) );
     }
  }
