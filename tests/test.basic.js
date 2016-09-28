@@ -5,8 +5,6 @@ const should = require('should')
 const path = require('path')
 const sinon = require('sinon')
 require('should-sinon')
-const Worker = require('../worker')
-const Client = require('../client')
 const App = require('./client.js')
 const bottleneck = require('mof-bottleneck')
 const request = require('mof-request')
@@ -16,6 +14,7 @@ const co = require('co')
 
 describe('Test worker in floodesh', ()=>{
     process.chdir(path.join(process.cwd(),'tests'));
+    const Worker = require('../worker');
     let worker;
     beforeEach(() => {
 	
@@ -42,7 +41,7 @@ describe('Test worker in floodesh', ()=>{
 	worker.use(cheerio());
 	worker.use(worker.parse());
 	
-	new Client(require('./config.js')['development']).attach(new App()).start();
+	new (require('../client'))().attach(new App()).start();
 	worker.on("complete", ()=>{
 	    if(++i===3){
 		worker._exit();
@@ -52,7 +51,7 @@ describe('Test worker in floodesh', ()=>{
 	//worker.start();
 	//worker._onJob('parse')({payload:'{"uri":"http://www.baidu.com"}'});
     });
-
+    
     it('should retry when time out', done=>{
 	worker = new Worker();
 	let getError = ()=>{

@@ -9,35 +9,11 @@ const isArray = require("lodash/isArray")
 const flattenDeep = require("lodash/flattenDeep")
 const MongoClient = require('mongodb').MongoClient
 const gearman = require("gearman-node-bda")
+const config = require('../config.js')
 const env = process.env.NODE_ENV || "development"
-const logLevel = process.env.LOG_LEVEL || "info"
 const debug = env === 'development';
 
 let logClient = winston.loggers.get("Client")
-let logWorker = winston.loggers.get("Worker")
-let logServer = winston.loggers.get("JobServer")
-let logJob = winston.loggers.get("Job")
-let logLB = winston.loggers.get("LBStrategy")
-let logProtocol = winston.loggers.get("protocol")
-winston.cli();
-
-if(env === 'production'){
-    logClient.remove(logClient.transports.console)
-    logWorker.remove(logWorker.transports.console)
-    logServer.remove(logServer.transports.console)
-    logJob.remove(logJob.transports.console)
-    logLB.remove(logLB.transports.console)
-    logProtocol.remove(logProtocol.transports.console)
-}else{
-    logClient.transports.console.level = logLevel
-    logWorker.transports.console.level = logLevel
-    logServer.transports.console.level = logLevel
-    logJob.transports.console.level = logLevel
-    logLB.transports.console.level = logLevel
-    logProtocol.transports.console.level = logLevel
-}
-
-//logClient.add(winston.transports.File, { filename: './gearman.client.log',logstash:true,level:'info',handleExceptions: false });
 
 const JOB_END = 'end'
 , JOB_START = 'start'
@@ -56,7 +32,7 @@ let args = process.argv.slice(2);
  */
 
 module.exports =  class Client extends Core{
-    constructor(config){
+    constructor(){
 	super();
 	this.serverTasks=[];
 	this.dbTasks=[];
@@ -163,9 +139,7 @@ module.exports =  class Client extends Core{
 	    if(err){
 		logClient.error(err);
 	    }else{
-		if(debug){
-		    logClient.info(result);
-		}
+		logClient.verbose(result);
 		
 		result.forEach(function(r,idx){
 		    if(r){
@@ -249,7 +223,7 @@ module.exports =  class Client extends Core{
 		self.app.onData(ds, function(){});
 	    }
 
-     	    logClient.debug('WORK_DATA >>> ' + ds);
+     	    logClient.verbose('WORK_DATA >>> ' + ds);
 	});
 	
 	objJob.on("warning",function(data){

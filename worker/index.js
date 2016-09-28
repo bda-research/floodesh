@@ -4,6 +4,7 @@
 const winston = require('winston')
 const Core = require('floodesh-lib')
 const gearman = require("gearman-node-bda")
+const config = require('../config.js')
 const path = require('path')
 const fs = require('fs')
 const env = process.env.NODE_ENV || "development"
@@ -13,23 +14,17 @@ module.exports = class Worker extends Core {
 	super();
 	let pkg = require(path.join(process.cwd(),'package'));
 	let parserDir = path.join(process.cwd(),'lib','parser');
-	let configDir = path.join(process.cwd(),'config', env);
-	this.config = require(configDir);
-	
-	fs.readdirSync(configDir)
-	    .filter(name=>name.slice(0,5)!=="index" && name.match(/\.js$/))
-	    .forEach(name => this.config[name.replace(/\.js$/,'')]=require(path.join(configDir,name)),this);
-	
-	delete this.config.gearman.loadBalancing;
-	
-	this.name = pkg.name;
-	this.version = pkg.version;
-	
-	this.logger = winston.loggers.get("floodesh");
+
 	this.parsers = Object.create(null);
 	fs.readdirSync(parserDir)
 	    .filter(name=>name.match(/\.js$/))
 	    .forEach(name=> this.parsers[name.replace(/\.js$/,'')]=require(path.join(parserDir,name)),this);
+	
+	this.config = config
+	delete this.config.gearman.loadBalancing;
+	this.name = pkg.name;
+	this.version = pkg.version;
+	this.logger = winston.loggers.get("floodesh");
 	
 	this._init();
     }
@@ -184,6 +179,9 @@ module.exports = class Worker extends Core {
 	}else{
 	    this.logger.error(e);
 	}
+
+	// to release resources that is occupied, for bottleneck, database, tcp connection etc.
+	Object.keys(ctx.resourceList).forEach(resource=>ctx.resourceList[resource]());
 	
 	switch(e.code){
 	case "ETIMEDOUT":
