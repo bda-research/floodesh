@@ -7,7 +7,6 @@ const gearman = require("gearman-node-bda")
 const config = require('../config.js')
 const path = require('path')
 const fs = require('fs')
-const env = process.env.NODE_ENV || "development"
 
 module.exports = class Worker extends Core {
     constructor(){
@@ -18,6 +17,7 @@ module.exports = class Worker extends Core {
 	this.parsers = Object.create(null);
 	fs.readdirSync(parserDir)
 	    .filter(name=>name.match(/\.js$/))
+	    .filter(name=>config.parsers.indexOf(name)!==-1)
 	    .forEach(name=> this.parsers[name.replace(/\.js$/,'')]=require(path.join(parserDir,name)),this);
 	
 	this.config = config
@@ -52,7 +52,7 @@ module.exports = class Worker extends Core {
      */
     
     _back(ctx){
-	this.logger.debug("Work complete: %s", ctx.url);
+	this.logger.debug("Work complete", ctx.opt);
 	if(ctx.dataSet.size > 0){
 	    (!this._w.closed) && ctx.job.sendWorkData( JSON.stringify([...ctx.dataSet]) );
 	}
@@ -106,7 +106,7 @@ module.exports = class Worker extends Core {
      * 
      */
     _hookSIG(){
-	process.on('SIGINT',this._exit.bind(this));
+	process.on('SIGINT',this.exit.bind(this));
     }
 
     /* Exit gracefully
@@ -114,7 +114,7 @@ module.exports = class Worker extends Core {
      * and close connection
      *
      */
-    _exit(){
+    exit(){
 	let self = this;
 	(!this._w.closed) && this._w.resetAbilities( (e) =>{
 	    if(e) self.logger.error(e.stack);
@@ -188,11 +188,10 @@ module.exports = class Worker extends Core {
 	case "ENETRESET":
 	case "ECONNRESET":
 	case "ECONNABORTED":
-	    if(0 === ctx.opt.retries){
-		break;
-	    }else{
+	    if(0 !== ctx.opt.retries)
 		return this._retry(ctx);
-	    }
+
+	    break;
 	default:
 	    break;
 	}

@@ -27,7 +27,7 @@ describe('Test worker in floodesh', ()=>{
 	should.exist(worker.config.gearman);
 	should.exist(worker.config.logger);
 	should.exist(worker.config.mongodb);
-	worker._exit();
+	worker.exit();
     });
     
     it("should new a worker", (done)=> {
@@ -44,7 +44,7 @@ describe('Test worker in floodesh', ()=>{
 	new (require('../client'))().attach(new App()).start();
 	worker.on("complete", ()=>{
 	    if(++i===3){
-		worker._exit();
+		worker.exit();
 		done();
 	    }
 	});
@@ -74,7 +74,45 @@ describe('Test worker in floodesh', ()=>{
 	//     return next();
 	// });
 	
-	worker.on('complete', ctx=> done());
-	worker.emit("error",getError(),{opt:{uri:"http://www.baidu.com"}, app:{},request:{}, response:{},job:{workComplete:function(){},reportException:function(){}}});
+	worker.on('complete', ctx=> {
+	    process.nextTick(()=>{
+		worker.exit();
+		done();
+	    });
+	});
+	
+	worker.emit("error",getError(),{opt:{uri:"http://www.baidu.com"}, app:{},request:{}, response:{},resourceList:{},job:{workComplete:function(){},reportException:function(){}}});
+    });
+
+    it('should emit complete even if one of middlewares do not call next', done=>{
+	worker = new Worker();
+	let  number=[];
+	worker.use((ctx, next)=>{
+	    number.push(2);
+	    return next();
+	});
+	
+	worker.use((ctx, next)=>{
+	    
+	});
+
+	worker.use((ctx, next)=>{
+	    number.push(3);
+	    return next();
+	});
+	
+	worker.on('complete',ctx=>{
+	    number.should.eql([1,2]);
+	    process.nextTick(()=>{
+		worker.exit();
+		done();
+	    });
+	});
+
+	let ctx = worker.enqueue({uri:"http://www.baidu.com"});
+	number.push(1);
+
+	ctx.func='home';
+	ctx.job = {workComplete:function(){}};
     });
 });
