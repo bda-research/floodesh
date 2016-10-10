@@ -9,7 +9,9 @@ const isArray = require("lodash/isArray")
 const flattenDeep = require("lodash/flattenDeep")
 const MongoClient = require('mongodb').MongoClient
 const gearman = require("gearman-node-bda")
-const config = require('../config.js')
+const config = require('../lib/config.js')
+const Status = require('../lib/status.js')
+const Job = require('../lib/job.js')
 const env = process.env.NODE_ENV || "development"
 const debug = env === 'development';
 
@@ -18,7 +20,9 @@ let logClient = winston.loggers.get("Client")
 const JOB_END = 'end'
 , JOB_START = 'start'
 , JOB_QUEUE = 'queue'
-, CLIENT_READY = 'ready';
+, CLIENT_READY = 'ready'
+, DEFAULT_FN = 'parse'
+, DEFAULT_PRIORITY = 1;
 
 let args = process.argv.slice(2);
 
@@ -60,21 +64,35 @@ module.exports =  class Client extends Core{
 	MongoClient.connect( this.config.mongodb ,function(err,db){
 	    if(err) throw err;
 	    logClient.info("Connect to mongodb success.");
-	    db.collection(self.app.name).createIndex({_id:1});
-	    db.collection(self.app.name).createIndex({app:1,_id:1});
+	    db.collection(self.app.name).createIndex({status:1, priority:1,_id:1});
 	    self.db = db;
 	    self.emit(CLIENT_READY);
 	});
 	
 	this.on(JOB_START,function(job){
+	    logClient.debug(job.toString());
 	    this.serverTasks.push(0);
 	});
 	
-	this.on(JOB_END,function(){
+	this.on(JOB_END,function(gearmanJob,status){
 	    this.serverTasks.pop();
-	    this._dequeue(this._dehandler);
 	    
-	    logClient.debug("there are %d jobs",this.serverTasks.length);
+	    //update mongodb
+	    if(status === Status.success || status === Status.failed ){
+		this.db.collection(this.app.name)
+		    .update({
+			_id:gearmanJob.jobVO._id
+		    },{
+			$set:{status:status}
+		    });
+	    }else{
+		logClient.error("Status error: %d", status);
+	    }
+	    
+	    if(this.serverTasks.length<this.maxQueueSize)
+		this._dequeue(this._dehandler);
+
+	    logClient.debug("Server queued jobs: %d",this.serverTasks.length);
 	});
 	
 	this.on(CLIENT_READY,function(){
@@ -82,9 +100,10 @@ module.exports =  class Client extends Core{
 		arg = isArray(arg) ? arg : [arg];
 		return flattenDeep(arg);
 	    }
+	    
 	    let startup = function(){
 		/* TODO: deal with recover */
-		if(args[0] == 'db'){
+		if(args[0] === 'db'){
 		    logClient.info("Start fetching job from database.");
 		    this._dequeue(this._dehandler);
 		}else{
@@ -103,30 +122,52 @@ module.exports =  class Client extends Core{
 	this.on(JOB_QUEUE,function(items){
 	    if(items.length===0)
 		return;
+
+	    let bulk = this.db.collection(this.app.name).initializeUnorderedBulkOp();
 	    
-	    for (let i = 0; i < items.length/1000; i++) {
-    		let count = items.length-1000*i;
-    		count = count>1000?1000:count;
-    		this.dbTasks.push(2);
-    		this.db.collection(this.app.name).insertMany(items.slice(i*1000, i*1000+count),function(err,result){
-		    if(err) logClient.error(err);
-		    self.dbTasks.pop();
-		});
-	    };
+	    for(let i =0;i<items.length;i++){
+		bulk.insert(items[i]);
+	    }
+	    
+	    this.dbTasks.push(2);
+	    bulk.execute(err => {
+		if(err) logClient.error(err);
+		self.dbTasks.pop();
+	    });
 	});
     }
 
+    _toJob(task){
+	return Job({
+	    opt: typeof task.opt === "string" ? {uri:task.opt} : task.opt,
+	    app:this.app.name,
+	    priority : task.priority || DEFAULT_PRIORITY,
+	    next : task.next || DEFAULT_FN,
+	    status : Status.waiting
+	});
+    }
+    
+    _getPriority(num){
+        switch(num){
+        case 2:
+	    return "LOW";
+	case 0:
+	    return "HIGH";
+	case 1:
+	    return "NORMAL";
+        default:
+	    return "NORMAL";
+        }
+    }
+
     _enqueue(jobs){
-	if(jobs.length == 0)
+	if(jobs.length === 0)
 	    return;
 	
 	let items = [], requests=[], self=this;
 	for(let i=0;i<jobs.length;i++){
 	    requests.push(jobs[i].opt);
-	    items.push({
-		payload:JSON.stringify(jobs[i]),
-		app:this.app.name
-	    });
+	    items.push(this._toJob(jobs[i]));
 	}
 	
 	if(!this.seen)
@@ -145,10 +186,7 @@ module.exports =  class Client extends Core{
 		    if(r){
 			return;
 		    }else{
-			items.push({
-			    payload:JSON.stringify(jobs[idx]),
-			    app:self.app.name
-			});
+			items.push(self._toJob(jobs[idx]));
 		    }
 		});
 		self.emit(JOB_QUEUE,items);
@@ -157,15 +195,30 @@ module.exports =  class Client extends Core{
     }
     
     _dequeue(fn){
-	this.db.collection(this.app.name).findAndModify({app:this.app.name},[['_id',1]],{remove:true},fn.bind(this));
+	//findAndModify() will only select one document to modify.
+	this.db.collection(this.app.name)
+	    .findAndModify({// query
+		status:Status.waiting
+	    },{// sort
+		priority:1,
+		_id:1
+	    },{// update operations
+		$set:{status:Status.going},
+		$currentDate:{
+		    updatedAt:{$type:"date"},
+		    fetchTime:{$type:"date"}
+		}
+	    },fn.bind(this));
     }
 
     _dehandler(err,result){
 	if(err){
 	    logClient.error(err);
 	}else{
-	    if(result.value && result.value.payload) {
-		this._go(JSON.parse(result.value.payload));
+	    if(result.value && result.value.opt) {
+		logClient.debug("Job: %s",JSON.stringify(result.value));
+		
+		this._goOne(result.value);
 		if(this.serverTasks.length<this.maxQueueSize){
 		    process.nextTick(function(){this._dequeue(this._dehandler)}.bind(this));
 		}
@@ -188,29 +241,44 @@ module.exports =  class Client extends Core{
 	}
     }
 
+    /*
+     *
+     * To create job
+     job: {
+         opt:{uri:"https://www.baidu.com"},
+	 next:"parse",
+	 priority:1,
+	 status:1
+     }
+
+     */
     _go(job){
-    job = isArray(job) ? job : [job];
+	job = isArray(job) ? job : [job];
 	for(let i = 0; i < job.length; ++i) {
 	    let task = job[i];
 	    if(typeof job === 'string') {
-		task = {opt:{uri:task},next:'parse'};
+		task = {opt:{uri:task},next:DEFAULT_FN};
 	    } else {
 		if(!task.next) {
-		    task = {opt:task,next:'parse'};
+		    task = {opt:task,next:DEFAULT_FN};
 		}
+		
 		if(typeof task.opt === 'string') {
-		    task = {opt:{uri:task.opt},next:task.next};
+		    task.opt = {uri:task.opt};
 		}
 	    }
+	    
 	    this._goOne(task);
 	}
     }
 
     _goOne(job){
+	let argv = job.opt
+	, fn = job.next
+	, priority = this._getPriority(job.hasOwnProperty("priority")?job.priority:DEFAULT_PRIORITY);
 	
-	let argv = job.opt, fn = job.next;
-	
-	let objJob = this.gearmanClient.submitJob(this.app.name+"_"+fn, JSON.stringify(argv),{background: false});
+	let objJob = this.gearmanClient.submitJob(this.app.name+"_"+fn, JSON.stringify(argv),{background: false, priority:priority});
+	objJob.jobVO = job;
 	this.emit(JOB_START,objJob);
 	
 	logClient.debug("fn: %s, argv: %s",this.app.name+"_"+fn,JSON.stringify(argv));
@@ -232,22 +300,22 @@ module.exports =  class Client extends Core{
 	
 	objJob.on("failed",function(){
 	    logClient.warn("work failed")
-	    this.emit(JOB_END);
+	    this.emit(JOB_END, objJob,Status.failed);
 	});
 	
 	objJob.on("exception",function(emsg){
 	    logClient.error('job exception: %s',emsg);
-	    this.emit(JOB_END);
+	    this.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on("error",function(e){
 	    logClient.error('job error: %s',e);
-	    this.emit(JOB_END);
+	    this.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on('timeout',function(){
 	    logClient.error("time out");
-	    this.emit(JOB_END);
+	    this.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on('complete', function() {
@@ -262,9 +330,9 @@ module.exports =  class Client extends Core{
 	    if(self.app.onComplete){
 		self.app.onComplete(res);
 	    }
-	    
+	    // res must be a job format, cannot handle 
 	    self._enqueue(res);
-	    process.nextTick(function(){self.emit(JOB_END);});
+	    process.nextTick(function(){self.emit(JOB_END,objJob,Status.success);});
 	});
     }
 

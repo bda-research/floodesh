@@ -4,7 +4,7 @@
 const winston = require('winston')
 const Core = require('floodesh-lib')
 const gearman = require("gearman-node-bda")
-const config = require('../config.js')
+const config = require('../lib/config.js')
 const path = require('path')
 const fs = require('fs')
 
@@ -13,18 +13,21 @@ module.exports = class Worker extends Core {
 	super();
 	let pkg = require(path.join(process.cwd(),'package'));
 	let parserDir = path.join(process.cwd(),'lib','parser');
-
-	this.parsers = Object.create(null);
-	fs.readdirSync(parserDir)
-	    .filter(name=>name.match(/\.js$/))
-	    .filter(name=>config.parsers.indexOf(name)!==-1)
-	    .forEach(name=> this.parsers[name.replace(/\.js$/,'')]=require(path.join(parserDir,name)),this);
 	
+	this.parsers = Object.create(null);
 	this.config = config
 	delete this.config.gearman.loadBalancing;
 	this.name = pkg.name;
 	this.version = pkg.version;
 	this.logger = winston.loggers.get("floodesh");
+
+	this.logger.debug("Configuration loaded: %s", JSON.stringify(config));
+	
+	// load parsers
+	fs.readdirSync(parserDir)
+	    .filter(name=>name.match(/\.js$/))
+	    .filter(name=>config.parsers.indexOf(name)!==-1)
+	    .forEach(name=> this.parsers[name.replace(/\.js$/,'')]=require(path.join(parserDir,name)),this);
 	
 	this._init();
     }
