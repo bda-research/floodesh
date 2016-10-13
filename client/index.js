@@ -138,10 +138,17 @@ module.exports =  class Client extends Core{
     }
 
     _toJob(task){
+	let opt = typeof task.opt === "string" ? {uri:task.opt} : task.opt
+	, priority = task.hasOwnProperty('priority')? task.priority : (opt.hasOwnProperty('priority')?opt.priority:DEFAULT_PRIORITY);
+
+	if(priority !== DEFAULT_PRIORITY){
+	    opt.priority = priority;
+	}
+	
 	return Job({
-	    opt: typeof task.opt === "string" ? {uri:task.opt} : task.opt,
+	    opt: opt,
 	    app:this.app.name,
-	    priority : task.priority || DEFAULT_PRIORITY,
+	    priority : priority,
 	    next : task.next || DEFAULT_FN,
 	    status : Status.waiting
 	});
