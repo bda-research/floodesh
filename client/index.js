@@ -300,22 +300,22 @@ module.exports =  class Client extends Core{
 	
 	objJob.on("failed",function(){
 	    logClient.warn("work failed")
-	    this.emit(JOB_END, objJob,Status.failed);
+	    self.emit(JOB_END, objJob,Status.failed);
 	});
 	
 	objJob.on("exception",function(emsg){
 	    logClient.error('job exception: %s',emsg);
-	    this.emit(JOB_END,objJob,Status.failed);
+	    self.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on("error",function(e){
 	    logClient.error('job error: %s',e);
-	    this.emit(JOB_END,objJob,Status.failed);
+	    self.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on('timeout',function(){
 	    logClient.error("time out");
-	    this.emit(JOB_END,objJob,Status.failed);
+	    self.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on('complete', function() {

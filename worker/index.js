@@ -199,6 +199,7 @@ module.exports = class Worker extends Core {
 	    break;
 	}
 	
-	(!this._w.closed) && ctx.job.workComplete( JSON.stringify([]) );
+	if(!this._w.closed)
+	    ctx.job.reportError( JSON.stringify([]) );
     }
  }
