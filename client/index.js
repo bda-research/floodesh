@@ -42,7 +42,7 @@ module.exports =  class Client extends Core{
 	this.dbTasks=[];
 	this.db = null;
 	this.maxQueueSize = 100;
-	this.gearmanClient = gearman.client(config.gearman);
+	this.gearmanClient = gearman.client(config.gearman.client);
 	this.config = config;
     }
     

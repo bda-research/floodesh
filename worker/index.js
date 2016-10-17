@@ -15,11 +15,12 @@ module.exports = class Worker extends Core {
 	let parserDir = path.join(process.cwd(),'lib','parser');
 	
 	this.parsers = Object.create(null);
-	this.config = config
-	delete this.config.gearman.loadBalancing;
+	this.config = config;
 	this.name = pkg.name;
 	this.version = pkg.version;
 	this.logger = winston.loggers.get("floodesh");
+	this.jobs = new Set();
+	this.readyReset = false;
 
 	this.logger.debug("Configuration loaded: %s", JSON.stringify(config));
 	
@@ -57,10 +58,10 @@ module.exports = class Worker extends Core {
     _back(ctx){
 	this.logger.debug("Work complete", ctx.opt);
 	if(ctx.dataSet.size > 0){
-	    (!this._w.closed) && ctx.job.sendWorkData( JSON.stringify([...ctx.dataSet]) );
+	    ctx.job.sendWorkData( JSON.stringify([...ctx.dataSet]) );
 	}
 	
-	(!this._w.closed) && ctx.job.workComplete( JSON.stringify(ctx.tasks) );
+	ctx.job.workComplete( JSON.stringify(ctx.tasks) );
     }
 
     /* Job parser from `String` to `Object` (also deserialize)
@@ -81,8 +82,10 @@ module.exports = class Worker extends Core {
 	
 	return function(job){
 	    let opt = self._parseJobArgv(job);
-
+	    
+	    self.jobs.add(job);
 	    self.logger.debug("New Job",opt);
+	    self.logger.debug("Queued jobs: %d", self.jobs.size);
 	    
 	    let ctx = self.enqueue(opt);
 	    ctx.func = fname;
@@ -118,15 +121,23 @@ module.exports = class Worker extends Core {
      *
      */
     exit(){
-	let self = this;
-	(!this._w.closed) && this._w.resetAbilities( (e) =>{
-	    if(e) self.logger.error(e.stack);
-	    self._w.close();
-	});
+	this.logger.info("SIGINT received, ready to exit, current working jobs: %d", this.jobs.size);
+	this._w.readyReset = this.readyReset = true;// set ready to reset to tell worker do not send GRAB_JOB any more.
+	this._tryClose();
     }
 
+    _tryClose(){
+	if(this.jobs.size>0 || !this.readyReset)
+	    return;
+
+	this._w.resetAbilities( (e) =>{
+	    if(e) this.logger.error(e.stack);
+	    process.nextTick(()=>this._w.close());
+	});
+    }
+    
     _register2Server(){
-	return gearman.worker(this.config.gearman);
+	return gearman.worker(this.config.gearman.worker);
     }
 
     _registerFunctions(names){
@@ -165,11 +176,21 @@ module.exports = class Worker extends Core {
 	// this._w.on("jobServerError",(id, code, msg)=>{
 	//     self._onError(new Error(msg));
 	// });
+
+	this._w.grabJob(this.config.gearman.jobs);
+    }
+
+    _finally(ctx){
+	if(!this.jobs.delete(ctx.job)){
+	    this.logger.warn("Delete job failed from set",ctx);
+	}
+	
+	this._tryClose();
     }
 
     _onComplete(ctx){
-	//ctx.releaseBtlneck();
 	this._back(ctx);
+	this._finally(ctx);
     }
 
     /* default erorr handler for `Worker`
@@ -198,8 +219,8 @@ module.exports = class Worker extends Core {
 	default:
 	    break;
 	}
-	
-	if(!this._w.closed)
-	    ctx.job.reportError( JSON.stringify([]) );
+
+	ctx.job.reportError( JSON.stringify([]) );
+	this._finally(ctx);
     }
  }
