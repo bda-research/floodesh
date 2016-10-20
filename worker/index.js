@@ -27,8 +27,9 @@ module.exports = class Worker extends Core {
 	// load parsers
 	fs.readdirSync(parserDir)
 	    .filter(name=>name.match(/\.js$/))
+	    .map(name=>name.replace(/\.js$/,''))
 	    .filter(name=>config.parsers.indexOf(name)!==-1)
-	    .forEach(name=> this.parsers[name.replace(/\.js$/,'')]=require(path.join(parserDir,name)),this);
+	    .forEach(name=> this.parsers[name]=require(path.join(parserDir,name)),this);
 	
 	this._init();
     }
@@ -184,8 +185,9 @@ module.exports = class Worker extends Core {
 	if(!this.jobs.delete(ctx.job)){
 	    this.logger.warn("Delete job failed from set",ctx);
 	}
-	
-	this._tryClose();
+
+	if(this.readyReset)
+	    this._tryClose();
     }
 
     _onComplete(ctx){
