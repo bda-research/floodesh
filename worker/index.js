@@ -20,7 +20,7 @@ module.exports = class Worker extends Core {
 	this.version = pkg.version;
 	this.logger = winston.loggers.get("floodesh");
 	this.jobs = new Set();
-	this.readyReset = false;
+	this.readyToExit = false;
 
 	this.logger.debug("Configuration loaded: %s", JSON.stringify(config));
 	
@@ -35,7 +35,7 @@ module.exports = class Worker extends Core {
     }
     
     /*
-     * Pase the response body, 
+     * Parse the response body, 
      * @ctx context
      * 
      * @api private
@@ -43,12 +43,11 @@ module.exports = class Worker extends Core {
      */
     parse(){
 	return (ctx, next)=>{
-	    ctx.app.logger.debug("Start parsing: %s",ctx.func);
+	    ctx.app.logger.verbose("Start parsing: %s",ctx.func);
 	    return ctx.app.parsers[ctx.func](ctx, next);
 	};
 	
 	//ctx.performance.responsemwTimestamp = Date.now();
-	//ctx.parse.call( this.app,ctx, () => self.emit("parsed",ctx) );
     }
 
     /* send back ctx.dataSet to client, serialize first
@@ -123,24 +122,18 @@ module.exports = class Worker extends Core {
      */
     exit(){
 	this.logger.info("SIGINT received, ready to exit, current working jobs: %d", this.jobs.size);
-	this._w.readyReset = this.readyReset = true;// set ready to reset to tell worker do not send GRAB_JOB any more.
-	this._tryClose();
+	this._w.readyReset = this.readyToExit = true;// set ready to reset to tell worker do not send GRAB_JOB any more.
+	this._tryExit();
     }
 
-    _tryClose(){
-	if(this.jobs.size>0 || !this.readyReset)
+    _tryExit(){
+	if(this.jobs.size>0)
 	    return;
 
-	this._w.resetAbilities( (e) =>{
-	    if(e) this.logger.error(e.stack);
-	    process.nextTick(()=>this._w.close());
-	});
+	//all working jobs are completed,  fire up `exit` event.
+	this.emit("exit");
     }
     
-    _register2Server(){
-	return gearman.worker(this.config.gearman.worker);
-    }
-
     _registerFunctions(names){
 	if(!(names instanceof Array)){
 	    names = [names];
@@ -157,27 +150,26 @@ module.exports = class Worker extends Core {
      * @api private
      */
     _init(){
-	this._w = this._register2Server()//gearman.worker(this.config.gearman)//register worker to master
-	this.retryPriority = 10;
-	this._hookSIG();
-
-	//this.initializeScheduler(this.config.schedule);
-
-	
+	this._w = gearman.worker(this.config.gearman.worker);
 	this._registerFunctions(Object.keys(this.parsers));
+	this.retryPriority = 0;
+	this._hookSIG();
         
 	this.on("complete", this._onComplete.bind(this) )
 	    .on('error', this._onError.bind(this))
-//	    .on("request", this._send.bind(this) )
-//	    .on("response", this._parse.bind(this) )
-//	    .on('error.request',this._onError.bind(this) );
-
+	    .on('exit', ()=>{
+		this._w.resetAbilities( (e) =>{
+		    if(e) this.logger.error(e.stack);
+		    process.nextTick(()=>this._w.close());
+		});
+	    });
+	
 	// let self = this;
 	// this._w.on("socketError",(id, e)=>{console.error("%s, %s",id, e.stack)});
 	// this._w.on("jobServerError",(id, code, msg)=>{
 	//     self._onError(new Error(msg));
 	// });
-
+	
 	this._w.grabJob(this.config.gearman.jobs);
     }
 
@@ -186,8 +178,8 @@ module.exports = class Worker extends Core {
 	    this.logger.warn("Delete job failed from set",ctx);
 	}
 
-	if(this.readyReset)
-	    this._tryClose();
+	if(this.readyToExit)
+	    this._tryExit();
     }
 
     _onComplete(ctx){
