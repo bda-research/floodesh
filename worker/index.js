@@ -200,6 +200,8 @@ module.exports = class Worker extends Core {
 
 	// to release resources that is occupied, for bottleneck, database, tcp connection etc.
 	Object.keys(ctx.resourceList).forEach(resource=>ctx.resourceList[resource]());
+
+	this.logger.debug("Error: %s ", e, ctx.opt);
 	
 	switch(e.code){
 	case "ETIMEDOUT":

@@ -205,7 +205,11 @@ module.exports =  class Client extends Core{
 	//findAndModify() will only select one document to modify.
 	this.db.collection(this.app.name)
 	    .findAndModify({// query
-		status:Status.waiting
+		$or:[{
+		    status:Status.waiting
+		},{
+		    status:Status.failed
+		}]
 	    },{// sort
 		priority:1,
 		_id:1
