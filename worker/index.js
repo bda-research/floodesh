@@ -84,8 +84,12 @@ module.exports = class Worker extends Core {
 	    let opt = self._parseJobArgv(job);
 	    
 	    self.jobs.add(job);
-	    self.logger.debug("New Job",opt);
+	    self.logger.verbose("New Job",opt);
 	    self.logger.debug("Queued jobs: %d", self.jobs.size);
+
+	    // continue to grab job from Server if queue is not full
+	    if(self.jobs.size<self.config.gearman.jobs)
+		self._w.grabJob(1);
 	    
 	    let ctx = self.enqueue(opt);
 	    ctx.func = fname;

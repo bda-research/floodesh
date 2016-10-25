@@ -41,7 +41,7 @@ module.exports =  class Client extends Core{
 	this.serverTasks=[];
 	this.dbTasks=[];
 	this.db = null;
-	this.maxQueueSize = 100;
+	this.srvQueueSize = config.gearman.srvQueueSize||100;
 	this.gearmanClient = gearman.client(config.gearman.client);
 	this.config = config;
     }
@@ -89,7 +89,7 @@ module.exports =  class Client extends Core{
 		logClient.error("Status error: %d", status);
 	    }
 	    
-	    if(this.serverTasks.length<this.maxQueueSize)
+	    if(this.serverTasks.length<this.srvQueueSize)
 		this._dequeue(this._dehandler);
 
 	    logClient.debug("Server queued jobs: %d",this.serverTasks.length);
@@ -230,7 +230,7 @@ module.exports =  class Client extends Core{
 		logClient.debug("Job: %s",JSON.stringify(result.value));
 		
 		this._goOne(result.value);
-		if(this.serverTasks.length<this.maxQueueSize){
+		if(this.serverTasks.length<this.srvQueueSize){
 		    process.nextTick(function(){this._dequeue(this._dehandler)}.bind(this));
 		}
 	    }else if(this.serverTasks.length===0){
@@ -256,13 +256,13 @@ module.exports =  class Client extends Core{
      *
      * To create job
      job: {
-         opt:{uri:"https://www.baidu.com"},
-	 next:"parse",
-	 priority:1,
-	 status:1
+     opt:{uri:"https://www.baidu.com"},
+     next:"parse",
+     priority:1,
+     status:1
      }
 
-     */
+    */
     _go(job){
 	job = isArray(job) ? job : [job];
 	for(let i = 0; i < job.length; ++i) {
@@ -349,7 +349,7 @@ module.exports =  class Client extends Core{
 
     start(){
 	this._init();
-	this.seed = this.app.seed || (fs.existsSync('./seed.txt') && fs.readFileSync('./seed.txt').toString().replace(/\n*$/,'').split(/\n+/)) ||this.app.initRequests();
+	this.seed = this.app.seed || (fs.existsSync('./seed.txt') && fs.readFileSync('./seed.txt').toString().replace(/\n*$/,'').split(/\n+/)) ||this.app.initRequests()|| this.config.seed;
     }
 
     attach(app){

@@ -43,7 +43,7 @@ describe('Test worker in floodesh', ()=>{
 	
 	new (require('../client'))().attach(new App()).start();
 	worker.on("complete", ()=>{
-	    if(++i===3){
+	    if(++i===2){
 		worker.exit();
 		done();
 	    }
