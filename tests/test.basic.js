@@ -29,6 +29,16 @@ describe('Test worker in floodesh', ()=>{
 	should.exist(worker.config.mongodb);
 	worker.exit();
     });
+
+    it('should load seed file',()=>{
+	const Client = require('../client/');
+	let app = new Client();
+	app._init = sinon.spy();
+	app.attach({});
+	app.start();
+	app._init.should.be.calledOnce();
+	app.seed.length.should.be.equal(20);
+    });
     
     it("should new a worker", (done)=> {
 	let globalOptions = {};

@@ -12,8 +12,8 @@ const gearman = require("gearman-node-bda")
 const config = require('../lib/config.js')
 const Status = require('../lib/status.js')
 const Job = require('../lib/job.js')
+const path = require('path')
 const env = process.env.NODE_ENV || "development"
-const debug = env === 'development';
 
 let logClient = winston.loggers.get("Client")
 
@@ -349,7 +349,7 @@ module.exports =  class Client extends Core{
 
     start(){
 	this._init();
-	this.seed = this.app.seed || (fs.existsSync('./seed.txt') && fs.readFileSync('./seed.txt').toString().replace(/\n*$/,'').split(/\n+/)) ||this.app.initRequests()|| this.config.seed;
+	this.seed = this.app.seed || (fs.existsSync(path.join(process.cwd(),'seed.json')) && require(path.join(process.cwd(),'seed.json'))) ||this.app.initRequests()|| this.config.seed;
     }
 
     attach(app){
