@@ -5,15 +5,12 @@ const Core = require('floodesh-lib')
 const fs = require('fs')
 const seenreq = require("seenreq")
 const winston = require("winston")
-const isArray = require("lodash/isArray")
-const flattenDeep = require("lodash/flattenDeep")
 const MongoClient = require('mongodb').MongoClient
 const gearman = require("gearman-node-bda")
 const config = require('../lib/config.js')
 const Status = require('../lib/status.js')
 const Job = require('../lib/job.js')
 const path = require('path')
-const env = process.env.NODE_ENV || "development"
 
 let logClient = winston.loggers.get("Client")
 
@@ -96,11 +93,6 @@ module.exports =  class Client extends Core{
 	});
 	
 	this.on(CLIENT_READY,function(){
-	    let flatten = function(arg) {
-		arg = isArray(arg) ? arg : [arg];
-		return flattenDeep(arg);
-	    }
-	    
 	    let startup = function(){
 		/* TODO: deal with recover */
 		if(args[0] === 'db'){
@@ -108,7 +100,7 @@ module.exports =  class Client extends Core{
 		    this._dequeue(this._dehandler);
 		}else{
 		    logClient.info("Start fetching job from seed.");
-		    this._go(flatten(this.seed));
+		    this._go(this.seed);
 		}
 	    }.bind(this);
 	    
@@ -264,7 +256,7 @@ module.exports =  class Client extends Core{
 
     */
     _go(job){
-	job = isArray(job) ? job : [job];
+	job = job instanceof Array ? job : [job];
 	for(let i = 0; i < job.length; ++i) {
 	    let task = job[i];
 	    if(typeof job === 'string') {
