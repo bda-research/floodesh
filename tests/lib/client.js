@@ -19,7 +19,7 @@ iwjw.prototype = {
     },
     
     onComplete:function(tasks){
-	console.log("tasks: %d",tasks.length);
+	return tasks;
     },
     
     onEnd:function(){

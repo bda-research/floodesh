@@ -5,7 +5,7 @@ const should = require('should')
 const path = require('path')
 const sinon = require('sinon')
 require('should-sinon')
-const App = require('./client.js')
+const App = require('./lib/client.js')
 const bottleneck = require('mof-bottleneck')
 const request = require('mof-request')
 const cheerio = require('mof-cheerio')
@@ -58,8 +58,6 @@ describe('Test worker in floodesh', ()=>{
 		done();
 	    }
 	});
-	//worker.start();
-	//worker._onJob('parse')({payload:'{"uri":"http://www.baidu.com"}'});
     });
     
     it('should retry when time out', done=>{
@@ -86,12 +84,16 @@ describe('Test worker in floodesh', ()=>{
 	
 	worker.on('complete', ctx=> {
 	    process.nextTick(()=>{
+		should.exist(ctx);
 		worker.exit();
 		done();
 	    });
 	});
 	
-	worker.emit("error",getError(),{opt:{uri:"http://www.baidu.com"}, app:{},request:{}, response:{},resourceList:{},job:{workComplete:function(){},reportException:function(){}}});
+	let job = {workComplete:function(){},reportException:function(){}};
+	let ctx = {opt:{uri:"http://www.baidu.com"}, app:{},request:{}, response:{},resourceList:{},job:job};
+	worker.jobs.add(job);
+	worker.emit("error",getError(),ctx);
     });
 
     it('should emit complete even if one of middlewares do not call next', done=>{
@@ -103,7 +105,8 @@ describe('Test worker in floodesh', ()=>{
 	});
 	
 	worker.use((ctx, next)=>{
-	    
+	    should.exist(ctx);
+	    should.exist(next);
 	});
 
 	worker.use((ctx, next)=>{
@@ -114,6 +117,7 @@ describe('Test worker in floodesh', ()=>{
 	worker.on('complete',ctx=>{
 	    number.should.eql([1,2]);
 	    process.nextTick(()=>{
+		should.exist(ctx);
 		worker.exit();
 		done();
 	    });
@@ -124,5 +128,6 @@ describe('Test worker in floodesh', ()=>{
 
 	ctx.func='home';
 	ctx.job = {workComplete:function(){}};
+	worker.jobs.add(ctx.job);
     });
 });
