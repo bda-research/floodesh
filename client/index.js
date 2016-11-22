@@ -100,7 +100,8 @@ module.exports =  class Client extends Core{
 		    this._dequeue(this._dehandler);
 		}else{
 		    logClient.info("Start fetching job from seed.");
-		    this._go(this.seed);
+		    this.emit(JOB_QUEUE,this.seed.map(item=>this._toJob(item)));
+		    process.nextTick(()=>this._dequeue(this._dehandler));
 		}
 	    }.bind(this);
 	    
@@ -194,22 +195,23 @@ module.exports =  class Client extends Core{
     }
     
     _dequeue(fn){
-	//findAndModify() will only select one document to modify.
 	this.db.collection(this.app.name)
-	    .findAndModify({// query
+	    .findOneAndUpdate({// filter
 		$or:[{
 		    status:Status.waiting
 		},{
 		    status:Status.failed
 		}]
-	    },{// sort
-		priority:1,
-		_id:1
 	    },{// update operations
 		$set:{status:Status.going},
 		$currentDate:{
 		    updatedAt:{$type:"date"},
 		    fetchTime:{$type:"date"}
+		}
+	    },{
+		sort:{
+		    priority:1,
+		    _id:1
 		}
 	    },fn.bind(this));
     }
@@ -235,7 +237,6 @@ module.exports =  class Client extends Core{
 			this.onEnd();
 		    }
 		    
-		    logClient.profile(this.app.name);
 		    logClient.info("=====All done=====");
 		}else{
 		    setTimeout(function(){this._dequeue(this._dehandler)}.bind(this),2000);

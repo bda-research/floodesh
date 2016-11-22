@@ -17,10 +17,11 @@ const logFloodesh = winston.loggers.get("floodesh")
 , logServer = winston.loggers.get("JobServer")
 , logJob = winston.loggers.get("Job")
 , logLB = winston.loggers.get("LBStrategy")
-, logProtocol = winston.loggers.get("protocol");
+, logProtocol = winston.loggers.get("protocol")
+, level = 'debug';
 
 logFloodesh.configure({
-    level: 'warn',
+    level: level,
     transports: [
 	new (winston.transports.Console)(),
 	new rotate({datePattern:'yyyy-MM-dd',filename: logBaseDir+`/${pkg.name}/floodesh.log`})
@@ -31,7 +32,7 @@ logFloodesh.cli();
 
 const gearmanRotate = new rotate({datePattern:'yyyy-MM-dd',filename: logBaseDir+`/${pkg.name}/gearman.log`});
 logClient.configure({
-    level:'warn',
+    level:level,
     transports: [
 	new (winston.transports.Console)(),
 	gearmanRotate
@@ -39,7 +40,7 @@ logClient.configure({
 });
 
 logWorker.configure({
-    level:'warn',
+    level:level,
     transports: [
 	new (winston.transports.Console)(),
 	gearmanRotate
@@ -47,7 +48,7 @@ logWorker.configure({
 });
 
 logServer.configure({
-    level:'warn',
+    level:level,
     transports: [
 	new (winston.transports.Console)(),
 	gearmanRotate
@@ -55,7 +56,7 @@ logServer.configure({
 });
 
 logJob.configure({
-    level:'warn',
+    level:level,
     transports: [
 	new (winston.transports.Console)(),
 	gearmanRotate
@@ -63,7 +64,7 @@ logJob.configure({
 });
 
 logLB.configure({
-    level:'warn',
+    level:level,
     transports: [
 	new (winston.transports.Console)(),
 	gearmanRotate
@@ -71,7 +72,7 @@ logLB.configure({
 });
 
 logProtocol.configure({
-    level:'warn',
+    level:level,
     transports: [
 	new (winston.transports.Console)(),
 	gearmanRotate

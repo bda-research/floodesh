@@ -43,7 +43,7 @@ module.exports = class Worker extends Core {
      */
     parse(){
 	return (ctx, next)=>{
-	    ctx.app.logger.verbose("Start parsing: %s",ctx.func);
+	    ctx.app.logger.verbose("Start parsing: %s",ctx.func,ctx.job.uuid);
 	    return ctx.app.parsers[ctx.func](ctx, next);
 	};
 	
