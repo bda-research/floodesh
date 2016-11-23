@@ -140,7 +140,6 @@ module.exports =  class Client extends Core{
 	
 	return Job({
 	    opt: opt,
-	    app:this.app.name,
 	    priority : priority,
 	    next : task.next || DEFAULT_FN,
 	    status : Status.waiting
