@@ -212,6 +212,7 @@ module.exports = class Worker extends Core {
 	case "ENETRESET":
 	case "ECONNRESET":
 	case "ECONNABORTED":
+	case "ESOCKETTIMEDOUT":
 	    if(0 !== ctx.opt.retries)
 		return this._retry(ctx);
 

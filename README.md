@@ -1,5 +1,3 @@
-# V0.4.x API is different from earlier version, please do not upgrade your previous dependence.
-
 # Floodesh
 Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a combination of two words, `flood` and `mesh`.
 
@@ -185,7 +183,12 @@ Array of pending crawling tasks. A task is an object consists of [Options](https
  * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio). A simple wrapper of `Cheerio`
  * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser). Parse `Charset`  in response headers
  * [mof-iconv](https://www.npmjs.com/package/mof-iconv). Encoding converter middleware using `iconv` or `iconv-lite`
+ * [mof-request](https://www.npmjs.com/package/mof-request).
+ * [mof-bottleneck](https://www.npmjs.com/package/mof-bottleneck).
+ * [mof-proxy](https://www.npmjs.com/package/mof-proxy).
+ * [mof-whacko](https://www.npmjs.com/package/mof-whacko).
  * [mof-reqnormalizer](https://www.npmjs.com/package/mof-normalizer).
+ * [mof-statsdclient](https://www.npmjs.com/package/mof-statsdclient).
  * [mof-reqadapter](https://www.npmjs.com/package/mof-reqadapter).
  * [mof-uarotate](https://www.npmjs.com/package/mof-uarotate).
  * [mof-seenreq](https://www.npmjs.com/package/mof-seenreq). Only make sense in [flowesh](https://www.npmjs.com/package/flowesh), a simple wrapper of `seenreq`
