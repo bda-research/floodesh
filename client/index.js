@@ -231,7 +231,8 @@ module.exports =  class Client extends Core{
 		if(this.dbTasks.length===0){
 		    this.db.close();
 		    this.gearmanClient.close();
-		    //this.seen.dispose();
+		    if(this.seen)
+			this.seen.dispose();
 		    if(this.onEnd){
 			this.onEnd();
 		    }
