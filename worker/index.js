@@ -203,7 +203,10 @@ module.exports = class Worker extends Core {
 	}
 
 	// to release resources that is occupied, for bottleneck, database, tcp connection etc.
-	Object.keys(ctx.resourceList).forEach(resource=>ctx.resourceList[resource]());
+	Object.keys(ctx.resourceList).forEach(resource=>{
+	    ctx.resourceList[resource]();
+	    this.logger.debug("%s released",resource);
+	},this);
 
 	this.logger.debug("Error: %s ", e, ctx.opt);
 	
