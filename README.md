@@ -32,8 +32,8 @@ A context instance is a kind of [Finite-State Machine](https://en.wikipedia.org/
 
 ```javascript
 worker.responsemw.use( (ctx,next) => {
-	ctx.content = ctx.body.toString(); // totally do not care about the body 
-	return next();
+    ctx.content = ctx.body.toString(); // totally do not care about the body 
+    return next();
 })
 ```
 
@@ -160,22 +160,19 @@ Check if the incoming response contains the "Content-Type" header field, and it 
 
 
 ### tasks
-	* Array
+ * Array
 
 Array of pending crawling tasks. A task is an object consists of [Options](https://github.com/request/request#requestoptions-callback) and `next`, `next` is a function name in your spider you want to call in next task , Supported format:
 
-	* ```{
-		opt:[Options](https://github.com/request/request#requestoptions-callback),
-		next:String
-	}```
+```
+[{
+    opt:[Options](https://github.com/request/request#requestoptions-callback),
+    next:String
+}]
+```
 
-	* ```{
-		opt:String
-	}```
-	
-	* `[Options](https://github.com/request/request#requestoptions-callback)`
 ### dataSet
-	* Map
+ * Map
 
 `dataSet` is a map to store result, that will be parsed and saved by floodesh.
 
