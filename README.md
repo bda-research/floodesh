@@ -82,7 +82,7 @@ Get the origin of URL, for instance, "https://www.google.com".
 ### ctx.protocol
   *  String
   
-Return the protocol string "http" or "https".
+Return the protocol string "http:" or "https:".
 
 ### ctx.host
   * String, hostname:port

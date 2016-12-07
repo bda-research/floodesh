@@ -80,7 +80,10 @@ module.exports =  class Client extends Core{
 		    .update({
 			_id:gearmanJob.jobVO._id
 		    },{
-			$set:{status:status}
+			$set:{status:status},
+			$currentDate:{
+			    updatedAt:{$type:"date"}
+			}
 		    });
 	    }else{
 		logClient.error("Status error: %d", status);
