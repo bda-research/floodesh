@@ -42,6 +42,7 @@ module.exports =  class Client extends Emitter{
 	this.srvQueueSize = config.gearman.srvQueueSize||100;
 	this.gearmanClient = gearman.client(config.gearman.client);
 	this.config = config;
+	this.logClient = logClient;
     }
     
     _init(){
