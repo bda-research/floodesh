@@ -1,30 +1,34 @@
 
 "use strict"
 
-const fs = require('fs')
+const Client = require('../../client/')
 
-function iwjw(){
-    this.name = "testapp";
-    this.seed = [{opt:{uri:"http://www.baidu.com"},next:'home'}, {opt:"http://www.sogou.com",next:"home"}];
-}
+class Iwjw extends Client{
+    constructor(){
+	super();
+	this.name = "testapp";
+	this.seed = [{opt:{uri:"http://www.baidu.com"},next:'home'}, {opt:"http://www.sogou.com",next:"home"}];
+	this.on('init',(done)=> this.onInit(done))
+	    .on('data',(data,done) => this.onData(data,done))
+	    .on('complete',tasks=>this.onComplete(tasks))
+	    .on('exit',()=>this.onEnd());
+    }
 
-iwjw.prototype = {
-    constructor:iwjw,
-    onInit:function(done){
+    onInit(done){
 	done();
-    },
-    onData:function(data,done){
-	this.output.write(data.get('data'))
-	done();
-    },
+    }
     
-    onComplete:function(tasks){
+    onData(data,done){
+	done();
+    }
+    
+    onComplete(tasks){
 	return tasks;
-    },
+    }
     
-    onEnd:function(){
-	this.output.end();
+    onEnd(){
+	
     }
 }
 
-module.exports = iwjw;
+module.exports = Iwjw;

@@ -1,16 +1,17 @@
 
 'use strict';
 
-const Core = require('floodesh-lib')
+const Emitter = require('events')
 const fs = require('fs')
 const seenreq = require("seenreq")
 const winston = require("winston")
 const MongoClient = require('mongodb').MongoClient
 const gearman = require("gearman-node-bda")
+const path = require('path')
+
 const config = require('../lib/config.js')
 const Status = require('../lib/status.js')
 const Job = require('../lib/job.js')
-const path = require('path')
 
 let logClient = winston.loggers.get("Client")
 
@@ -29,10 +30,10 @@ let args = process.argv.slice(2);
  *
  *
  *
- *
+ * event: ['init', 'data', 'complete', 'exit']
  */
 
-module.exports =  class Client extends Core{
+module.exports =  class Client extends Emitter{
     constructor(){
 	super();
 	this.serverTasks=[];
@@ -45,11 +46,11 @@ module.exports =  class Client extends Core{
     
     _init(){
 	let self = this;
-	logClient.info(this.app.name);
+	logClient.info(this.name);
 	
 	let seenOptions = this.config.seenreq;
 	if(seenOptions){
-	    seenOptions.appName=this.app.name;
+	    seenOptions.appName=this.name;
 	    this.seen = new seenreq(seenOptions);
 	}
 	
@@ -58,10 +59,10 @@ module.exports =  class Client extends Core{
 	this.gearmanClient.on("socketError", (jobServerUid,e) => e && logClient.error(e.stack) )
 	this.gearmanClient.on("socketDisconnect", (jobServerUid,e) => e && logClient.error(e.stack) )
 	
-	MongoClient.connect( this.config.mongodb ,function(err,db){
+	MongoClient.connect( this.config.gearman.mongodb ,function(err,db){
 	    if(err) throw err;
 	    logClient.info("Connect to mongodb success.");
-	    db.collection(self.app.name).createIndex({status:1, priority:1,_id:1});
+	    db.collection(self.name).createIndex({status:1,fetchCount:1, priority:1,_id:1});
 	    self.db = db;
 	    self.emit(CLIENT_READY);
 	});
@@ -76,7 +77,7 @@ module.exports =  class Client extends Core{
 	    
 	    //update mongodb
 	    if(status === Status.success || status === Status.failed ){
-		this.db.collection(this.app.name)
+		this.db.collection(this.name)
 		    .update({
 			_id:gearmanJob.jobVO._id
 		    },{
@@ -107,19 +108,16 @@ module.exports =  class Client extends Core{
 		    process.nextTick(()=>this._dequeue(this._dehandler));
 		}
 	    }.bind(this);
-	    
-	    if(this.app.onInit){
-		this.app.onInit(startup);
-	    }else{
+
+	    if(!this.emit("init", startup))
 		startup();
-	    }
 	});
 	
 	this.on(JOB_QUEUE,function(items){
 	    if(items.length===0)
 		return;
 
-	    let bulk = this.db.collection(this.app.name).initializeUnorderedBulkOp();
+	    let bulk = this.db.collection(this.name).initializeUnorderedBulkOp();
 	    
 	    for(let i =0;i<items.length;i++){
 		bulk.insert(items[i]);
@@ -197,22 +195,20 @@ module.exports =  class Client extends Core{
     }
     
     _dequeue(fn){
-	this.db.collection(this.app.name)
-	    .findOneAndUpdate({// filter
-		$or:[{
-		    status:Status.waiting
-		},{
-		    status:Status.failed
-		}]
+	this.db.collection(this.name)
+	    .findOneAndUpdate({// filter fetchCount <=1 and status is waiting or failed
+		$or:[{status:Status.waiting},{status:Status.failed, fetchCount:{$lte:(this.config.gearman.retry||1)}}]
 	    },{// update operations
 		$set:{status:Status.going},
 		$currentDate:{
 		    updatedAt:{$type:"date"},
 		    fetchTime:{$type:"date"}
-		}
+		},
+		$inc:{fetchCount:1}
 	    },{
 		sort:{
 		    priority:1,
+		    fetchCount:1,
 		    _id:1
 		}
 	    },fn.bind(this));
@@ -236,9 +232,8 @@ module.exports =  class Client extends Core{
 		    this.gearmanClient.close();
 		    if(this.seen)
 			this.seen.dispose();
-		    if(this.onEnd){
-			this.onEnd();
-		    }
+
+		    this.emit('exit');
 		    
 		    logClient.info("=====All done=====");
 		}else{
@@ -284,19 +279,18 @@ module.exports =  class Client extends Core{
 	, fn = job.next
 	, priority = this._getPriority(job.hasOwnProperty("priority")?job.priority:DEFAULT_PRIORITY);
 	
-	let objJob = this.gearmanClient.submitJob(this.app.name+"_"+fn, JSON.stringify(argv),{background: false, priority:priority});
+	let objJob = this.gearmanClient.submitJob(this.name+"_"+fn, JSON.stringify(argv),{background: false, priority:priority});
 	objJob.jobVO = job;
 	this.emit(JOB_START,objJob);
 	
-	logClient.debug("fn: %s, argv: %s",this.app.name+"_"+fn,JSON.stringify(argv));
+	logClient.debug("fn: %s, argv: %s",this.name+"_"+fn,JSON.stringify(argv));
 	logClient.debug(objJob.getUid());
 	
 	let self = this;
 	objJob.on('workData', function(data) {//all data end with \n?
 	    let ds = new Map(JSON.parse(data.toString()));
-	    if(self.app.onData){
-		self.app.onData(ds, function(){});
-	    }
+	    if(!self.emit('data',ds,function(){}))
+		logClient.warn("Nobody cares about data");
 
      	    logClient.verbose('WORK_DATA >>> ' + ds);
 	});
@@ -333,10 +327,9 @@ module.exports =  class Client extends Core{
 		logClient.error(e);
 		return;
 	    }
+
+	    self.emit("complete",res);
 	    
-	    if(self.app.onComplete){
-		self.app.onComplete(res);
-	    }
 	    // res must be a job format, cannot handle 
 	    self._enqueue(res);
 	    process.nextTick(function(){self.emit(JOB_END,objJob,Status.success);});
@@ -345,19 +338,6 @@ module.exports =  class Client extends Core{
 
     start(){
 	this._init();
-	this.seed = this.app.seed || (fs.existsSync(path.join(process.cwd(),'seed.json')) && require(path.join(process.cwd(),'seed.json'))) ||this.app.initRequests()|| this.config.seed;
-    }
-
-    attach(app){
-	this.app = app;
-	return this;
+	this.seed = this.seed || (fs.existsSync(path.join(process.cwd(),'seed.json')) && require(path.join(process.cwd(),'seed.json'))) || (this.initRequests && this.initRequests())|| this.config.seed;
     }
 }
-
-/*
- * app must supply `name`, `seed` is optional
- * @name:       [String] set app name which also used as function prefix
- * @seed:       [Array|String|Object] start url(s) or options
- * @onData:     [Function] called while client receiving data
- * @onComplete: [Function] called while a job complete
- */

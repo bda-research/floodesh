@@ -30,7 +30,7 @@ describe('Worker',function(){
 	    Worker.prototype._hookSIG= sinon.spy();
 	    w = new Worker();
 	});
-	
+
 	it('should listen on customized functions', () =>{
 	    should.exists(w._w.functions.testapp_home);
 	});

@@ -1,8 +1,10 @@
 
 "use strict"
 
-const should = require('should')
 const path = require('path')
+process.chdir(path.join(process.cwd(),'tests'));
+
+const should = require('should')
 const sinon = require('sinon')
 require('should-sinon')
 const App = require('./lib/client.js')
@@ -13,7 +15,6 @@ const iconv = require('mof-iconv')
 const co = require('co')
 
 describe('Test worker in floodesh', ()=>{
-    process.chdir(path.join(process.cwd(),'tests'));
     const Worker = require('../worker');
     let worker;
     beforeEach(() => {
@@ -30,34 +31,9 @@ describe('Test worker in floodesh', ()=>{
 	worker.exit();
     });
 
-    it('should load seed file',()=>{
-	const Client = require('../client/');
-	let app = new Client();
-	app._init = sinon.spy();
-	app.attach({});
-	app.start();
-	app._init.should.be.calledOnce();
-	app.seed.length.should.be.equal(20);
-    });
-    
-    it("should new a worker", (done)=> {
-	let globalOptions = {};
-	let i = 0;
+    it("should new a worker", ()=> {
 	worker = new Worker();
-	
-	worker.use(co.wrap(bottleneck({rate:0,concurrent:1})));
-	worker.use(co.wrap(request(globalOptions)));
-	worker.use(iconv());
-	worker.use(cheerio());
-	worker.use(worker.parse());
-	
-	new (require('../client'))().attach(new App()).start();
-	worker.on("complete", ()=>{
-	    if(++i===2){
-		worker.exit();
-		done();
-	    }
-	});
+	worker.should.be.an.instanceOf(Worker);
     });
     
     it('should retry when time out', done=>{
