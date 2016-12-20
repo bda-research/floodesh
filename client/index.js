@@ -208,8 +208,8 @@ module.exports =  class Client extends Emitter{
 		$inc:{fetchCount:1}
 	    },{
 		sort:{
-		    priority:1,
 		    fetchCount:1,
+		    priority:1,
 		    _id:1
 		}
 	    },fn.bind(this));
