@@ -197,9 +197,9 @@ module.exports = class Worker extends Core {
      */
     _onError(e, ctx){
 	if(e instanceof Error){
-	    this.logger.error(e.stack);
+	    this.logger.error(e.stack,ctx.opt);
 	}else{
-	    this.logger.error(e);
+	    this.logger.error(e, ctx.opt);
 	}
 
 	// to release resources that is occupied, for bottleneck, database, tcp connection etc.
@@ -207,8 +207,6 @@ module.exports = class Worker extends Core {
 	    ctx.resourceList[resource]();
 	    this.logger.debug("%s released",resource);
 	},this);
-
-	this.logger.debug("Error: %s ", e, ctx.opt);
 	
 	switch(e.code){
 	case "ETIMEDOUT":
@@ -224,7 +222,8 @@ module.exports = class Worker extends Core {
 	    break;
 	}
 
-	ctx.job.reportError( JSON.stringify([]) );
+	ctx.job.reportWarning(e.stack || e);
+	//ctx.job.reportError( JSON.stringify([]) );
 	this._finally(ctx);
     }
  }
