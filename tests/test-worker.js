@@ -100,9 +100,11 @@ describe('Worker',function(){
 	it('should send error to server',()=>{
 	    ctx.job = {};
 	    ctx.job.reportError = sinon.spy();
+	    ctx.job.reportWarning = sinon.spy();
 	    w._finally = sinon.spy();
 	    let e = new Error("this is an error for testing");
 	    w._onError(e,ctx);
+	    ctx.job.reportWarning.should.be.calledOnce();
 	    ctx.job.reportError.should.be.calledOnce();
 	    w._finally.should.be.calledOnce();
 	})

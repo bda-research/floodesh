@@ -223,7 +223,7 @@ module.exports = class Worker extends Core {
 	}
 
 	ctx.job.reportWarning(e.stack || e);
-	//ctx.job.reportError( JSON.stringify([]) );
+	ctx.job.reportError();
 	this._finally(ctx);
     }
  }
