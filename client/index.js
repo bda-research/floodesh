@@ -73,7 +73,7 @@ module.exports =  class Client extends Emitter{
 	    this.serverTasks.push(0);
 	});
 	
-	this.on(JOB_END,function(gearmanJob,status,msg){
+	this.on(JOB_END,function(gearmanJob,status){
 	    this.serverTasks.pop();
 
 	    let op = {
@@ -90,7 +90,7 @@ module.exports =  class Client extends Emitter{
 			_id:gearmanJob.jobVO._id
 		    },op);
 	    }else if(status === Status.failed ){
-		op.$set.cause = msg;
+		op.$set.cause = gearmanJob.errorMsg;
 		
 		this.db.collection(this.name)
 		    .update({
@@ -306,27 +306,28 @@ module.exports =  class Client extends Emitter{
 	});
 	
 	objJob.on("warning",function(data){
-	    logClient.warn(data.toString());
-	    self.emit(JOB_END, objJob,Status.failed, data.toString());
+	    logClient.debug(data.toString());
+	    objJob.errorMsg = data.toString();
 	});
 	
 	objJob.on("failed",function(){
-	    logClient.warn("work failed")
+	    logClient.debug("work failed", objJob.jobVO);
 	    self.emit(JOB_END, objJob,Status.failed);
 	});
-	
-	objJob.on("exception",function(emsg){
-	    logClient.error('job exception: %s',emsg);
-	    self.emit(JOB_END,objJob,Status.failed,emsg.toString());
-	});
+
+	// deprecated
+	// objJob.on("exception",function(emsg){
+	//     logClient.debug('job exception: %s',emsg);
+	//     self.emit(JOB_END,objJob,Status.failed,emsg.toString());
+	// });
 	
 	objJob.on("error",function(e){
-	    logClient.error('job error: %s',e);
-	    self.emit(JOB_END,objJob,Status.failed, e.stack);
+	    logClient.error('job error: %s',e.stack, objJob.jobVO);
+	    self.emit(JOB_END,objJob,Status.failed);
 	});
 	
 	objJob.on('timeout',function(){
-	    logClient.error("time out");
+	    logClient.error("time out", objJob.jobVO);
 	    self.emit(JOB_END,objJob,Status.failed);
 	});
 	
