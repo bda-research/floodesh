@@ -42,10 +42,10 @@ module.exports = class Worker extends Core {
      *
      */
     parse(){
-	return (ctx, next)=>{
+	return  function* (ctx, next) {
 	    ctx.app.logger.verbose("Start parsing: %s",ctx.func,ctx.job.uuid);
-	    return ctx.app.parsers[ctx.func](ctx, next);
-	};
+	    return yield ctx.app.parsers[ctx.func](ctx, next);
+	}
 	
 	//ctx.performance.responsemwTimestamp = Date.now();
     }
@@ -222,7 +222,7 @@ module.exports = class Worker extends Core {
 	    break;
 	}
 
-	ctx.job.reportWarning(e.stack || e);
+	ctx.job.reportWarning(JSON.stringify(e));
 	ctx.job.reportError();
 	this._finally(ctx);
     }

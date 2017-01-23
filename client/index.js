@@ -90,7 +90,7 @@ module.exports =  class Client extends Emitter{
 			_id:gearmanJob.jobVO._id
 		    },op);
 	    }else if(status === Status.failed ){
-		op.$set.cause = gearmanJob.errorMsg;
+		op.$set.cause = gearmanJob.error && gearmanJob.error.code;
 		
 		this.db.collection(this.name)
 		    .update({
@@ -306,8 +306,7 @@ module.exports =  class Client extends Emitter{
 	});
 	
 	objJob.on("warning",function(data){
-	    logClient.debug(data.toString());
-	    objJob.errorMsg = data.toString();
+	    objJob.error = JSON.parse(data);
 	});
 	
 	objJob.on("failed",function(){
