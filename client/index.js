@@ -114,15 +114,7 @@ module.exports =  class Client extends Emitter{
 		    this._dequeue(this._dehandler);
 		}else{
 		    logClient.info("Start fetching job from seed.");
-		    this.emit(JOB_QUEUE,this.seed.map(item=>this._toJob(item)),(e) => {
-			logClient.silly("Inserted jobs. Here in callback.");
-			this.dbTasks.pop();
-			
-			if(e)
-			    return logClient.error(e);
-
-			this._dequeue(this._dehandler);
-		    } );
+		    this.emit(JOB_QUEUE,this.seed.map(item=>this._toJob(item)),() => this._dequeue(this._dehandler));
 		}
 	    }.bind(this);
 
@@ -132,7 +124,7 @@ module.exports =  class Client extends Emitter{
 	
 	this.on(JOB_QUEUE,function(items, callback){
 	    if(items.length===0)
-		return;
+		return callback();
 
 	    let bulk = this.db.collection(this.name).initializeUnorderedBulkOp();
 	    
@@ -142,12 +134,13 @@ module.exports =  class Client extends Emitter{
 	    
 	    this.dbTasks.push(2);
 	    logClient.silly("Inserting jobs to mongodb...");
-	    bulk.execute(callback);
-	    // bulk.execute(err => {
-	    // 	logClient.silly("Inserted jobs. Here in callback.");
-	    // 	if(err) logClient.error(err);
-	    // 	self.dbTasks.pop();
-	    // });
+	    //bulk.execute(callback);
+	    bulk.execute(err => {
+	    	logClient.silly("Inserted jobs. Here in callback.");
+	    	if(err) logClient.error(err);
+	    	self.dbTasks.pop();
+		callback();
+	    });
 	});
     }
 
@@ -181,9 +174,9 @@ module.exports =  class Client extends Emitter{
     }
 
     _enqueue(jobs, callback){
-	if(jobs.length === 0)
-	    return;
-	
+	if(0 === jobs.length)
+	    return callback();
+	    
 	let items = [], requests=[], self=this;
 	for(let i=0;i<jobs.length;i++){
 	    requests.push(jobs[i].opt);
@@ -199,6 +192,7 @@ module.exports =  class Client extends Emitter{
 	    self.dbTasks.pop();
 	    if(err){
 		logClient.error(err);
+		return callback();
 	    }else{
 		logClient.verbose(result);
 		
@@ -354,15 +348,7 @@ module.exports =  class Client extends Emitter{
 	    self.emit("complete",res);
 	    
 	    // res must be a job format, cannot handle 
-	    self._enqueue(res,e => {
-		logClient.silly("Inserted jobs. Here in callback.");
-		self.dbTasks.pop();
-		
-		if(e)
-		    logClient.error(e);
-
-		self.emit(JOB_END,objJob,Status.success);
-	    });
+	    self._enqueue(res,() => self.emit(JOB_END,objJob,Status.success));
 	});
     }
 
