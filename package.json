@@ -1,6 +1,6 @@
 {
   "name": "floodesh",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
   "main": "index.js",
   "scripts": {

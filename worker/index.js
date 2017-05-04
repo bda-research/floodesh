@@ -94,6 +94,7 @@ module.exports = class Worker extends Core {
 	    let ctx = self.enqueue(opt);
 	    ctx.func = fname;
 	    ctx.job = job;
+	    ctx.ts = new Date();
 	}
     }
 
@@ -107,6 +108,7 @@ module.exports = class Worker extends Core {
 	let newCtx = this.enqueue(opt);
 	newCtx.func = ctx.func;
 	newCtx.job = ctx.job;
+	newCtx.ts = new Date();
 	ctx=null;
     }
     

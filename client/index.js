@@ -114,8 +114,15 @@ module.exports =  class Client extends Emitter{
 		    this._dequeue(this._dehandler);
 		}else{
 		    logClient.info("Start fetching job from seed.");
-		    this.emit(JOB_QUEUE,this.seed.map(item=>this._toJob(item)));
-		    process.nextTick(()=>this._dequeue(this._dehandler));
+		    this.emit(JOB_QUEUE,this.seed.map(item=>this._toJob(item)),(e) => {
+			logClient.silly("Inserted jobs. Here in callback.");
+			this.dbTasks.pop();
+			
+			if(e)
+			    return logClient.error(e);
+
+			this._dequeue(this._dehandler);
+		    } );
 		}
 	    }.bind(this);
 
@@ -123,7 +130,7 @@ module.exports =  class Client extends Emitter{
 		startup();
 	});
 	
-	this.on(JOB_QUEUE,function(items){
+	this.on(JOB_QUEUE,function(items, callback){
 	    if(items.length===0)
 		return;
 
@@ -134,10 +141,13 @@ module.exports =  class Client extends Emitter{
 	    }
 	    
 	    this.dbTasks.push(2);
-	    bulk.execute(err => {
-		if(err) logClient.error(err);
-		self.dbTasks.pop();
-	    });
+	    logClient.silly("Inserting jobs to mongodb...");
+	    bulk.execute(callback);
+	    // bulk.execute(err => {
+	    // 	logClient.silly("Inserted jobs. Here in callback.");
+	    // 	if(err) logClient.error(err);
+	    // 	self.dbTasks.pop();
+	    // });
 	});
     }
 
@@ -170,7 +180,7 @@ module.exports =  class Client extends Emitter{
         }
     }
 
-    _enqueue(jobs){
+    _enqueue(jobs, callback){
 	if(jobs.length === 0)
 	    return;
 	
@@ -181,7 +191,7 @@ module.exports =  class Client extends Emitter{
 	}
 	
 	if(!this.seen)
-	    return this.emit(JOB_QUEUE,items);
+	    return this.emit(JOB_QUEUE,items, callback);
 	
 	items=[];//empty final job list.
 	this.dbTasks.push(3);
@@ -199,12 +209,13 @@ module.exports =  class Client extends Emitter{
 			items.push(self._toJob(jobs[idx]));
 		    }
 		});
-		self.emit(JOB_QUEUE,items);
+		self.emit(JOB_QUEUE,items, callback);
 	    }
 	});
     }
     
     _dequeue(fn){
+	logClient.silly("Fetching jobs from job queue");
 	this.db.collection(this.name)
 	    .findOneAndUpdate({// filter fetchCount <=1 and status is waiting or failed
 		$or:[{status:Status.waiting},{status:Status.failed, fetchCount:{$lte:(this.config.gearman.retry||1)}}]
@@ -225,6 +236,7 @@ module.exports =  class Client extends Emitter{
     }
 
     _dehandler(err,result){
+	logClient.silly("Fetched jobs. Here in callback");
 	if(err){
 	    logClient.error(err);
 	}else{
@@ -342,8 +354,15 @@ module.exports =  class Client extends Emitter{
 	    self.emit("complete",res);
 	    
 	    // res must be a job format, cannot handle 
-	    self._enqueue(res);
-	    process.nextTick(function(){self.emit(JOB_END,objJob,Status.success);});
+	    self._enqueue(res,e => {
+		logClient.silly("Inserted jobs. Here in callback.");
+		self.dbTasks.pop();
+		
+		if(e)
+		    logClient.error(e);
+
+		self.emit(JOB_END,objJob,Status.success);
+	    });
 	});
     }
 
