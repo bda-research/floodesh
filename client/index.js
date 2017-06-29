@@ -10,7 +10,7 @@ const gearman = require("gearman-node-bda")
 const path = require('path')
 
 const config = require('../lib/config.js')
-const Status = require('../lib/status.js')
+const StatusJob = require('../lib/status.js')
 const Job = require('../lib/job.js')
 
 let logClient = winston.loggers.get("Client")
@@ -24,14 +24,11 @@ const JOB_END = 'end'
 
 let args = process.argv.slice(2);
 
-/* job => {opt:{},next:"functionName"} or just "http://www.baidu.com"
- * tasks => [job1,job2,job3,job4]
- * 
- *
- *
- *
- * event: ['init', 'data', 'complete', 'exit']
- */
+function* StateClient(){
+    yield "ready";
+    yield "running";
+    yield "stop";
+}
 
 module.exports =  class Client extends Emitter{
     constructor(){
@@ -43,6 +40,7 @@ module.exports =  class Client extends Emitter{
 	this.gearmanClient = gearman.client(config.gearman.client);
 	this.config = config;
 	this.logClient = logClient;
+	this.state = StateClient();
     }
     
     _init(){
@@ -84,12 +82,12 @@ module.exports =  class Client extends Emitter{
 	    }
 	    
 	    //update mongodb
-	    if(status === Status.success){
+	    if(status === StatusJob.success){
 		this.db.collection(this.name)
 		    .update({
 			_id:gearmanJob.jobVO._id
 		    },op);
-	    }else if(status === Status.failed ){
+	    }else if(status === StatusJob.failed ){
 		op.$set.cause = gearmanJob.error && gearmanJob.error.code;
 		
 		this.db.collection(this.name)
@@ -97,7 +95,7 @@ module.exports =  class Client extends Emitter{
 			_id:gearmanJob.jobVO._id
 		    },op);
 	    }else{
-		logClient.error("Status error: %d", status);
+		logClient.error("StatusJob error: %d", status);
 	    }
 	    
 	    if(this.serverTasks.length<this.srvQueueSize)
@@ -107,6 +105,7 @@ module.exports =  class Client extends Emitter{
 	});
 	
 	this.on(CLIENT_READY,function(){
+	    this._nextState()// set client's state to ready.
 	    let startup = function(){
 		/* TODO: deal with recover */
 		if(args[0] === 'db'){
@@ -116,6 +115,8 @@ module.exports =  class Client extends Emitter{
 		    logClient.info("Start fetching job from seed.");
 		    this.emit(JOB_QUEUE,this.seed.map(item=>this._toJob(item)),() => this._dequeue(this._dehandler));
 		}
+
+		this._nextState();// set client's state to running.
 	    }.bind(this);
 
 	    if(!this.emit("init", startup))
@@ -144,6 +145,17 @@ module.exports =  class Client extends Emitter{
 	});
     }
 
+    _nextState(){
+	let ret = this.state.next();
+	if(!ret.done){
+	    logClient.debug("Client's state has changed to: %s",ret.value);
+	}else{
+	    logClient.debug("Client has already stopped");
+	}
+	
+	return ret.done;
+    }
+    
     _toJob(task){
 	let opt = typeof task.opt === "string" ? {uri:task.opt} : task.opt
 	, priority = task.hasOwnProperty('priority')? task.priority : (opt.hasOwnProperty('priority')?opt.priority:DEFAULT_PRIORITY);
@@ -156,7 +168,7 @@ module.exports =  class Client extends Emitter{
 	    opt: opt,
 	    priority : priority,
 	    next : task.next || DEFAULT_FN,
-	    status : Status.waiting
+	    status : StatusJob.waiting
 	});
     }
     
@@ -212,9 +224,9 @@ module.exports =  class Client extends Emitter{
 	logClient.silly("Fetching jobs from job queue");
 	this.db.collection(this.name)
 	    .findOneAndUpdate({// filter fetchCount <=1 and status is waiting or failed
-		$or:[{status:Status.waiting},{status:Status.failed, fetchCount:{$lte:(this.config.gearman.retry||1)}}]
+		$or:[{status:StatusJob.waiting},{status:StatusJob.failed, fetchCount:{$lte:(this.config.gearman.retry||1)}}]
 	    },{// update operations
-		$set:{status:Status.going},
+		$set:{status:StatusJob.going},
 		$currentDate:{
 		    updatedAt:{$type:"date"},
 		    fetchTime:{$type:"date"}
@@ -243,7 +255,7 @@ module.exports =  class Client extends Emitter{
 		}
 	    }else if(this.serverTasks.length===0){
 		//need finalize resources.
-		if(this.dbTasks.length===0){
+		if(this.dbTasks.length===0 && !this._nextState()){
 		    this.db.close();
 		    this.gearmanClient.close();
 		    if(this.seen)
@@ -317,23 +329,23 @@ module.exports =  class Client extends Emitter{
 	
 	objJob.on("failed",function(){
 	    logClient.debug("work failed", objJob.jobVO);
-	    self.emit(JOB_END, objJob,Status.failed);
+	    self.emit(JOB_END, objJob,StatusJob.failed);
 	});
 
 	// deprecated
 	// objJob.on("exception",function(emsg){
 	//     logClient.debug('job exception: %s',emsg);
-	//     self.emit(JOB_END,objJob,Status.failed,emsg.toString());
+	//     self.emit(JOB_END,objJob,StatusJob.failed,emsg.toString());
 	// });
 	
 	objJob.on("error",function(e){
 	    logClient.error('job error: %s',e.stack, objJob.jobVO);
-	    self.emit(JOB_END,objJob,Status.failed);
+	    self.emit(JOB_END,objJob,StatusJob.failed);
 	});
 	
 	objJob.on('timeout',function(){
 	    logClient.error("time out", objJob.jobVO);
-	    self.emit(JOB_END,objJob,Status.failed);
+	    self.emit(JOB_END,objJob,StatusJob.failed);
 	});
 	
 	objJob.on('complete', function() {
@@ -348,7 +360,7 @@ module.exports =  class Client extends Emitter{
 	    self.emit("complete",res);
 	    
 	    // res must be a job format, cannot handle 
-	    self._enqueue(res,() => self.emit(JOB_END,objJob,Status.success));
+	    self._enqueue(res,() => self.emit(JOB_END,objJob,StatusJob.success));
 	});
     }
 
