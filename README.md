@@ -25,13 +25,14 @@ Generate new app from templates by only one command.
 	$ mkdir floodesh_demo
 	$ cd floodesh_demo
 	$ floodesh-cli init // all necessary files will be generated in your directory.
-	$ npm install
+
+Please make sure you have /data/tests and /var/log/bda/tests created and have Write access before use, you can customize path by modifying logBaseDir in config/[env]/index.js 
 
 # Context
 A context instance is a kind of [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented by `Generators` which is [ECMAScript 6](http://es6-features.org/#GeneratorFunctionIteratorProtocol) feature. By context, we can access almost all fields in `response` and `request`, like:
 
 ```javascript
-worker.responsemw.use( (ctx,next) => {
+worker.use( (ctx,next) => {
     ctx.content = ctx.body.toString(); // totally do not care about the body 
     return next();
 })
