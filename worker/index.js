@@ -44,14 +44,7 @@ module.exports = class Worker extends Core {
     parse(){
 	return  function* (ctx, next) {
 	    ctx.app.logger.verbose("Start parsing: %s",ctx.func,ctx.job.uuid);
-	    yield ctx.app.parsers[ctx.func](ctx, next);
-		let tasks = [];
-		for(let task of ctx.tasks){
-			if(ctx.app.config.parsers.includes(task.next)){
-				tasks.push(task);
-			}
-		}
-		ctx.tasks = tasks;
+	    return yield ctx.app.parsers[ctx.func](ctx, next);
 	}
 	
 	//ctx.performance.responsemwTimestamp = Date.now();
