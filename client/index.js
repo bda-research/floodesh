@@ -82,25 +82,17 @@ module.exports =  class Client extends Emitter{
 	    }
 	    
 	    //update mongodb
-	    if(status === StatusJob.success){
-		this.db.collection(this.name)
-		    .update({
-			_id:gearmanJob.jobVO._id
-		    },op);
-	    }else if(status === StatusJob.failed ){
-		op.$set.cause = gearmanJob.error && gearmanJob.error.code;
-		
-		this.db.collection(this.name)
-		    .update({
-			_id:gearmanJob.jobVO._id
-		    },op);
-	    }else{
-		logClient.error("StatusJob error: %d", status);
+		if(status === StatusJob.failed ){
+			op.$set.cause = gearmanJob.error && gearmanJob.error.code;
 	    }
-	    
-	    if(this.serverTasks.length<this.srvQueueSize)
-		this._dequeue(this._dehandler);
 
+		this.db.collection(this.name).update({
+			_id:gearmanJob.jobVO._id
+		},op).then(() => {
+			if(this.serverTasks.length<this.srvQueueSize)
+				this._dequeue(this._dehandler);
+		});
+		
 	    logClient.debug("Server queued jobs: %d",this.serverTasks.length);
 	});
 	
