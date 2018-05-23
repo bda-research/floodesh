@@ -178,19 +178,16 @@ Array of pending crawling tasks. A task is an object consists of [Options](https
 `dataSet` is a map to store result, that will be parsed and saved by floodesh.
 
 # Middlewares
- * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio). A simple wrapper of `Cheerio`
- * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser). Parse `Charset`  in response headers
- * [mof-iconv](https://www.npmjs.com/package/mof-iconv). Encoding converter middleware using `iconv` or `iconv-lite`
- * [mof-request](https://www.npmjs.com/package/mof-request).
- * [mof-bottleneck](https://www.npmjs.com/package/mof-bottleneck).
- * [mof-proxy](https://www.npmjs.com/package/mof-proxy).
- * [mof-whacko](https://www.npmjs.com/package/mof-whacko).
- * [mof-reqnormalizer](https://www.npmjs.com/package/mof-normalizer).
- * [mof-statsdclient](https://www.npmjs.com/package/mof-statsdclient).
- * [mof-reqadapter](https://www.npmjs.com/package/mof-reqadapter).
- * [mof-uarotate](https://www.npmjs.com/package/mof-uarotate).
- * [mof-seenreq](https://www.npmjs.com/package/mof-seenreq). Only make sense in [flowesh](https://www.npmjs.com/package/flowesh), a simple wrapper of `seenreq`
- * [mof-validbody](https://www.npmjs.com/package/mof-validbody).
-
-
+ * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio): A simple wrapper of `Cheerio`.
+ * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser): Parse `Charset`  in response headers.
+ * [mof-iconv](https://www.npmjs.com/package/mof-iconv): Encoding converter middleware using `iconv` or `iconv-lite`.
+ * [mof-request](https://www.npmjs.com/package/mof-request): A wrapper of `Request.js`, with some default options.
+ * [mof-bottleneck](https://www.npmjs.com/package/mof-bottleneck): A wrapper of `bottleneckp` which is asynchronous rate limiter with priority.
+ * [mof-proxy](https://www.npmjs.com/package/mof-proxy): With power to acquire proxy from a proxy service.
+ * [mof-whacko](https://www.npmjs.com/package/mof-whacko): A wrapper of `whacko`, which is a fork of cheerio that uses parse5 as an underlying platform.
+ * [mof-statsd](https://www.npmjs.com/package/mof-statsd): A wrapper of `statsd-client`, which enables you send metrics to a statsd daemon.
+ * [mof-uarotate](https://www.npmjs.com/package/mof-uarotate): Rotate `User-Agent` header automatically from a local file.
+ * [mof-seenreq](https://www.npmjs.com/package/mof-seenreq): Only make sense in [flowesh](https://www.npmjs.com/package/flowesh), a simple wrapper of `seenreq`.
+ * [mof-validbody](https://www.npmjs.com/package/mof-validbody): Check if a response body meets a pattern, for instance, a html body should start with `<` and json body `{`.
+ * [mof-statuscode](https://www.npmjs.com/package/mof-statuscode): Status code detector.
 
