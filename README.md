@@ -190,4 +190,5 @@ Array of pending crawling tasks. A task is an object consists of [Options](https
  * [mof-seenreq](https://www.npmjs.com/package/mof-seenreq): Only make sense in [flowesh](https://www.npmjs.com/package/flowesh), a simple wrapper of `seenreq`.
  * [mof-validbody](https://www.npmjs.com/package/mof-validbody): Check if a response body meets a pattern, for instance, a html body should start with `<` and json body `{`.
  * [mof-statuscode](https://www.npmjs.com/package/mof-statuscode): Status code detector.
+ * [mof-genestamp](https://www.npmjs.com/package/mof-genestamp): Prints gene and url of a task, along with # of new tasks and # of records.
 
