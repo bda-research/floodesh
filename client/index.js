@@ -205,7 +205,7 @@ module.exports =  class Client extends Emitter{
 			});
 			
 			self.emit(JOB_QUEUE,items, callback);
-		}).then( (err) => {
+		}).catch( (err) => {
 			logClient.error(err);
 			return callback();
 		});
