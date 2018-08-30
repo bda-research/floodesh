@@ -1,30 +1,73 @@
 # Floodesh
 Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a combination of two words, `flood` and `mesh`.
 
-# Requirement
- *  [Gearman Server](http://gearman.org/)
- *  [MongoDB](https://www.mongodb.org/)
+# Table of Contents
+- [Requirement](#requirement)
+  * [Gearman Server](#gearman-server)
+  * [MongoDB](#mongodb)
+- [Quick start](#quick-start)
+  * [Install scaffold](#install-scaffold)
+  * [Initialize](#initialize)
+- [Context](#context)
+  * [Request](#request)
+    + [ctx.querystring](#ctxquerystring)
+    + [ctx.idempotent](#ctxidempotent)
+    + [ctx.search](#ctxsearch)
+    + [ctx.method](#ctxmethod)
+    + [ctx.query](#ctxquery)
+    + [ctx.path](#ctxpath)
+    + [ctx.url](#ctxurl)
+    + [ctx.origin](#ctxorigin)
+    + [ctx.protocol](#ctxprotocol)
+    + [ctx.host](#ctxhost)
+    + [ctx.hostname](#ctxhostname)
+    + [ctx.secure](#ctxsecure)
+  * [Response](#response)
+    + [ctx.status](#ctxstatus)
+    + [ctx.message](#ctxmessage)
+    + [ctx.body](#ctxbody)
+    + [ctx.length](#ctxlength)
+    + [ctx.type](#ctxtype)
+    + [ctx.lastModifieds](#ctxlastmodifieds)
+    + [ctx.etag](#ctxetag)
+    + [ctx.header](#ctxheader)
+    + [ctx.contentType](#ctxcontenttype)
+    + [ctx.get(key)](#ctxgetkey)
+    + [ctx.is(types)](#ctxistypes)
+  * [Other](#other)
+    + [ctx.tasks](#ctxtasks)
+    + [ctx.dataSet](#ctxdataset)
+- [Error handling](#error-handling)
+- [Middlewares](#middlewares)
 
-## Gearman Server Installation
+# Requirement
+## [Gearman Server](http://gearman.org/)
 Make sure `g++`, `make`, `libboost-all-dev`, `gperf`, `libevent-dev` and `uuid-dev` have been installed.
 
-	wget https://launchpad.net/gearmand/1.2/1.1.12/+download/gearmand-1.1.12.tar.gz | tar xvf
-	cd gearmand-1.1.12
-	./configure
-	make
-	make install
+```sh
+$ wget https://launchpad.net/gearmand/1.2/1.1.12/+download/gearmand-1.1.12.tar.gz | tar xvf
+$ cd gearmand-1.1.12
+$ ./configure
+$ make
+$ make install
+```
 
+## [MongoDB](https://www.mongodb.org/)
 
-# Install
-	
-	$ npm install -g floodesh-cli
+# Quick start
+## Install scaffold
+```sh	
+$ npm install -g floodesh-cli
+```
 
-# Useage
+## Initialize
 Generate new app from templates by only one command.
 
-	$ mkdir floodesh_demo
-	$ cd floodesh_demo
-	$ floodesh-cli init // all necessary files will be generated in your directory.
+```sh
+$ mkdir demo
+$ cd demo
+$ floodesh-cli init # all necessary files will be generated in your directory.
+```
 
 Please make sure you have /data/tests and /var/log/bda/tests created and have Write access before use, you can customize path by modifying logBaseDir in config/[env]/index.js 
 
@@ -41,141 +84,160 @@ worker.use( (ctx,next) => {
 ## Request
 
 ### ctx.querystring
-  *  String
+  *  <String\>
 
 Get querystring.
 
 ### ctx.idempotent
-  *  Boolean
+  *  <Boolean\>
   
 Check if the request is idempotent.
 
 ### ctx.search
-  *  String
+  *  <String\>
   
 Get the search string. It includes the leading "?" compare to querystring.
 
 ### ctx.method
-  *  String
+  *  <String\>
   
 Get request method.
 
 ### ctx.query
-  *  Object
+  *  <Object\>
   
 Get parsed query-string.
 
 ### ctx.path
-  *  String
+  *  <String\>
   
 Get the request pathname
 
 ### ctx.url
-  *  String
+  *  <String\>
   
 Return request url, the same as __ctx.href__.
 
 ### ctx.origin
-  *  String
+  *  <String\>
   
 Get the origin of URL, for instance, "https://www.google.com".
 
 ### ctx.protocol
-  *  String
+  *  <String\>
   
 Return the protocol string "http:" or "https:".
 
 ### ctx.host
-  * String, hostname:port
+  * <String\>, hostname:port
   
 Parse the "Host" header field host and support X-Forwarded-Host when a proxy is enabled.
 
 ### ctx.hostname
-  * String
+  * <String\>
   
 Parse the "Host" header field hostname and support X-Forwarded-Host when a proxy is enabled.
 
 ### ctx.secure
-  * Boolean
+  * <Boolean\>
   
 Check if protocol is https.
 
 ## Response
 
 ### ctx.status
-  *  Number
+  *  <Number\>
   
 Get status code from response.
 
 ### ctx.message
-  *  String
+  *  <String\>
   
 Get status message from response.
 
 ### ctx.body
-  *  Buffer
+  *  <Buffer\>
   
 Get the response body in Buffer.
 
 ### ctx.length
-  *  Number
+  *  <Number\>
   
 Get length of response body.
 
 ### ctx.type
-  *  String
+  *  <String\>
   
 Get the response mime type, for instance, "text/html"
 
 ### ctx.lastModifieds
-  *  Date
+  *  <Date\>
   
 Get the Last-Modified date in Date form, if it exists.
 
 ### ctx.etag
-  *  String
+  *  <String\>
   
 Get the ETag of a response.
 
 ### ctx.header
-  *  Object
+  *  <Object\>
   
 Return the response header.
 
 ### ctx.contentType
-  *  String
+  *  <String\>
 
 ### ctx.get(key)
-  *  `key` String
-  *  Return: String
+  *  `key` <String\>
+  *  Return: <String\>
 
 Get value by key in response headers
 
 ### ctx.is(types)
-  *  `type`s String|Array
-  *  Return: String|false|null
+  *  `type`s <String\>|Array\>
+  *  Return: <String\>|false|null
 
 Check if the incoming response contains the "Content-Type" header field, and it contains any of the give mime `type`s.If there is no response body, `null` is returned.If there is no content type, `false` is returned.Otherwise, it returns the first `type` that matches.
 
 ## Other
 
 
-### tasks
- * Array
+### ctx.tasks
+ * <Array\>
 
-Array of pending crawling tasks. A task is an object consists of [Options](https://github.com/request/request#requestoptions-callback) and `next`, `next` is a function name in your spider you want to call in next task , Supported format:
+Array of generated tasks. A task is an object consists of [Options](https://github.com/request/request#requestoptions-callback) and `next`, `next` is a function name in your spider you want to call in next task , Supported format:
 
 ```
 [{
-    opt:[Options](https://github.com/request/request#requestoptions-callback),
-    next:String
+    opt:<Options>,
+    next:<String>
 }]
 ```
 
-### dataSet
- * Map
+### ctx.dataSet
+ * <Map\>
 
-`dataSet` is a map to store result, that will be parsed and saved by floodesh.
+A map to store result, that will be parsed and saved by floodesh.
+
+# Error handling
+Just throw an `Error` in a synced middleware, otherwise return a rejected Promise. `err.stack` will be logged and `err.code` will be sent to client to persist.
+
+```javascript
+// sync
+module.exports = (ctx, next) => {
+    // balabala
+    throw new Error('crash here');
+}
+
+// async
+module.exports = (ctx, next) => {
+    return new Promise( (resolve, reject) => {
+        // balabala
+        reject(new Error('got error'));
+    });
+}
+```
 
 # Middlewares
  * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio): A simple wrapper of `Cheerio`.
