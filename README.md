@@ -37,6 +37,15 @@ Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a com
   * [Other](#other)
     + [ctx.tasks](#ctxtasks)
     + [ctx.dataSet](#ctxdataset)
+- [Configuration](#configuration)
+  * [index](#index)
+  * [bottleneck](#bottleneck)
+  * [downloader](#downloader)
+  * [gearman](#gearman)
+  * [database](#database)
+  * [logger](#logger)
+  * [seenreq](#seenreq)
+  * [service](#service)
 - [Error handling](#error-handling)
 - [Middlewares](#middlewares)
 
@@ -219,6 +228,48 @@ Array of generated tasks. A task is an object consists of [Options](https://gith
  * <Map\>
 
 A map to store result, that will be parsed and saved by floodesh.
+
+# Configuration
+## index
+* `retry` <Integer\>: Retry times at worker side, default `3`
+* `logBaseDir` <String\>: Directory where project's log directory exists, default '/var/log/bda/'
+* `parsers` <Array\>: Array of parsers, which are file names in parser directory without '.js'
+
+## bottleneck
+* `defaultCfg` <Object\>
+  * `rate` <Integer\>: Number of milliseconds to delay between each requests
+  * `concurrent` <Integer\>: Size of the worker pool
+  * `priorityRange` <Integer\>: Range of acceptable priorities starting from 0, default `3`
+  * `defaultPriority` <Integer\>: priority of the request
+  * `homogenous` <Boolean\>:true
+
+## downloader
+* `headers` <Object\>: [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
+
+## gearman
+* `jobs` <Integer\>: Max number of jobs per worker, default `1`
+* `srvQueueSize` <Integer\>: Max number of jobs queued to gearman server, default `1000`
+* `mongodb` <String\>: [Mongodb Connection String URI](https://docs.mongodb.com/manual/reference/connection-string/),
+* `worker` <Object\>:
+  * `servers` <Array\>: Array of server list, server should be an object like `{'host':'gearman-server'}`
+* `client` <Object\>:
+  * `servers` <Array\>: Same as above,
+  * `loadBalancing` <String\>: 'RoundRobin'
+* `retry` <Integer\>: Retry times at client side
+
+
+## database
+* `mongodb` <String\>: [Mongodb Connection String URI](https://docs.mongodb.com/manual/reference/connection-string/)
+
+## logger
+
+## seenreq
+* `repo` <String\>: [redis|mongodb] default use memory as repo.
+* `removeKeys` <Array\>:Array of keys in query string to skip when test if an url is seen
+
+## service
+* `server` <String\>: Remote service origin
+
 
 # Error handling
 Just throw an `Error` in a synced middleware, otherwise return a rejected Promise. `err.stack` will be logged and `err.code` will be sent to client to persist.

@@ -1,6 +1,11 @@
 ## Change Log
 
-### v0.8.15 (2018/08/16)
+### v0.8.17 (2018/08/31)
+- [9ca88b3](https://github.com/bda-research/floodesh/commit/9ca88b3beaf29c19e89df689e1f0454e2135e808) update README (@mike442144)
+- [#3](https://github.com/bda-research/floodesh/pull/3) fix bug of client always logging error (@bda-research)
+- [e4741e2](https://github.com/bda-research/floodesh/commit/e4741e27f0bcd7ef2fc63e1fd3559adfc799eb3e) fix bug of client always logging error (@mike442144)
+- [#2](https://github.com/bda-research/floodesh/pull/2) support for seenreq v2.x, add eslint (@bda-research)
+- [add5725](https://github.com/bda-research/floodesh/commit/add57258a93ddcd6528cbf819d4903406f252479) support for seenreq v2.x, add eslint (@mike442144)
 - [eb5e3ce](https://github.com/bda-research/floodesh/commit/eb5e3ce09225025e6c155eff5fec02e249d12df5) added a middleware (@mike442144)
 - [411049b](https://github.com/bda-research/floodesh/commit/411049b6a398b29dceb564380ab737018dd6b1f6) update README (@mike442144)
 - [cc0d811](https://github.com/bda-research/floodesh/commit/cc0d811ae1d7a3ef1121e1633870bc3c8c8daa40) added database option (@mike442144)
