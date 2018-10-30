@@ -47,6 +47,11 @@ Floodesh is middleware based web spider written with Nodejs. "Floodesh" is a com
   * [seenreq](#seenreq)
   * [service](#service)
 - [Error handling](#error-handling)
+- [Diagram](#diagram)
+  * [Client](#client)
+    + [State diagram](#state-diagram)
+    + [Flow chart](#flow-chart)
+  * [Worker](#worker)
 - [Middlewares](#middlewares)
 
 # Requirement
@@ -289,7 +294,13 @@ module.exports = (ctx, next) => {
     });
 }
 ```
-
+# Diagram
+## Client
+### State diagram
+![floodesh client state](https://user-images.githubusercontent.com/1272762/47698740-72b62e00-dc4b-11e8-9c7d-74f54522ac52.png)
+### Flow chart
+![floodesh client flow](https://user-images.githubusercontent.com/1272762/47699129-dbea7100-dc4c-11e8-89c3-29173d516104.png)
+## Worker
 # Middlewares
  * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio): A simple wrapper of `Cheerio`.
  * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser): Parse `Charset`  in response headers.
