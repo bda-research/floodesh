@@ -301,6 +301,8 @@ module.exports = (ctx, next) => {
 ### Flow chart
 ![floodesh client flow](https://user-images.githubusercontent.com/1272762/47699129-dbea7100-dc4c-11e8-89c3-29173d516104.png)
 ## Worker
+### Flow chart
+![floodesh worker flow](https://user-images.githubusercontent.com/1272762/47721732-bb8dd700-dc8b-11e8-9201-34ad3f14aa09.png)
 # Middlewares
  * [mof-cheerio](https://www.npmjs.com/package/mof-cheerio): A simple wrapper of `Cheerio`.
  * [mof-charsetparser](https://www.npmjs.com/package/mof-charsetparser): Parse `Charset`  in response headers.
