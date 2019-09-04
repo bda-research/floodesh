@@ -1,10 +1,10 @@
 {
   "name": "floodesh",
-  "version": "0.8.17",
+  "version": "0.8.18",
   "description": "Floodesh is a distributed web spider/crawler written with Nodejs.",
   "main": "index.js",
   "scripts": {
-	"hint":"eslint lib/*.js worker/*.js client/*.js",
+    "hint": "eslint lib/*.js worker/*.js client/*.js",
     "test": "./node_modules/mocha/bin/mocha --timeout 10000 tests/test-*.js"
   },
   "repository": {
@@ -32,6 +32,7 @@
     "floodesh-lib": "^1.1.1",
     "gearman-node-bda": "^0.10.0",
     "mongodb": "^2.1.4",
+    "ramda": "^0.26.1",
     "seenreq": "^2.0.0",
     "winston": "^2.1.1"
   },
@@ -40,8 +41,8 @@
     "mocha": "^2.4.5",
     "mof-bottleneck": "0.1.0",
     "mof-cheerio": "^1.0.1",
-    "mof-request": "^0.1.0",
     "mof-iconv": "^0.1.0",
+    "mof-request": "^0.1.0",
     "should": "^8.2.1",
     "should-sinon": "0.0.5",
     "sinon": "^1.17.3",

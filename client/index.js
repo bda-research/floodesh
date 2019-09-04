@@ -8,6 +8,7 @@ const winston = require('winston');
 const MongoClient = require('mongodb').MongoClient;
 const gearman = require('gearman-node-bda');
 const path = require('path');
+const sequenceBatches = require('../lib/batchInsert.js');
 
 const config = require('../lib/config.js');
 const StatusJob = require('../lib/status.js');
@@ -119,21 +120,34 @@ module.exports =  class Client extends Emitter{
 			if(items.length===0)
 				return callback();
 
-			let bulk = this.db.collection(this.name).initializeUnorderedBulkOp();
-			
-			for(let i =0;i<items.length;i++){
-				bulk.insert(items[i]);
-			}
-			
 			this.dbTasks.push(2);
-			logClient.silly('Inserting jobs to mongodb...');
-			//bulk.execute(callback);
-			bulk.execute(err => {
-				logClient.silly('Inserted jobs. Here in callback.');
-				if(err) logClient.error(err);
-				self.dbTasks.pop();
-				callback();
-			});
+			sequenceBatches({client: this.db, collection: this.name,batchSize:10000}, items)
+				.then(() => {
+					logClient.silly('Inserted jobs');
+					callback();
+					this.dbTasks.pop();
+				})
+				.catch(e => {
+					logClient.error(e);
+					this.dbTasks.pop();
+					callback();
+				});
+			
+			// let bulk = this.db.collection(this.name).initializeUnorderedBulkOp();
+			
+			// for(let i =0;i<items.length;i++){
+			// 	bulk.insert(items[i]);
+			// }
+			
+			// this.dbTasks.push(2);
+			// logClient.silly('Inserting jobs to mongodb...');
+			// //bulk.execute(callback);
+			// bulk.execute(err => {
+			// 	logClient.silly('Inserted jobs. Here in callback.');
+			// 	if(err) logClient.error(err);
+			// 	self.dbTasks.pop();
+			// 	callback();
+			// });
 		});
 	}
 
