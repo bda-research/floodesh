@@ -196,12 +196,18 @@ module.exports = class Worker extends Core {
 	/* default erorr handler for `Worker`
 	 *	should send message to server to end current job.
 	 * 
+	 *  log content: if e is an instance of `Error`, the first line is formatted as ${className}: ${message}, and is followed by a series of stack frames. otherwise just e itself which implicitly call e.toString()
 	 */
 	_onError(e, ctx){
 		if(e instanceof Error){
-			this.logger.error(e.stack,ctx.opt);
+			this.logger.error(e.stack, ctx.opt);
 		}else{
 			this.logger.error(e, ctx.opt);
+		}
+		
+		if(!e){
+			this.logger.warning(`expect an error object or string message, got ${typeof e}`);
+			e = '';//to avoid exception when read property `code` from null or undefined.
 		}
 
 		// to release resources that is occupied, for bottleneck, database, tcp connection etc.

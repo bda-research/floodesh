@@ -136,17 +136,17 @@ module.exports =  class Client extends Emitter{
 			// let bulk = this.db.collection(this.name).initializeUnorderedBulkOp();
 			
 			// for(let i =0;i<items.length;i++){
-			// 	bulk.insert(items[i]);
+			//	bulk.insert(items[i]);
 			// }
 			
 			// this.dbTasks.push(2);
 			// logClient.silly('Inserting jobs to mongodb...');
 			// //bulk.execute(callback);
 			// bulk.execute(err => {
-			// 	logClient.silly('Inserted jobs. Here in callback.');
-			// 	if(err) logClient.error(err);
-			// 	self.dbTasks.pop();
-			// 	callback();
+			//	logClient.silly('Inserted jobs. Here in callback.');
+			//	if(err) logClient.error(err);
+			//	self.dbTasks.pop();
+			//	callback();
 			// });
 		});
 	}
@@ -164,7 +164,7 @@ module.exports =  class Client extends Emitter{
 	
 	_toJob(task){
 		let opt = typeof task.opt === 'string' ? {uri:task.opt} : task.opt;
-		let priority = task.hasOwnProperty('priority')? task.priority : (opt.hasOwnProperty('priority')?opt.priority:DEFAULT_PRIORITY);
+		let priority = Object.prototype.hasOwnProperty.call(task,'priority')? task.priority : (Object.prototype.hasOwnProperty.call(opt,'priority')?opt.priority:DEFAULT_PRIORITY);
 
 		if(priority !== DEFAULT_PRIORITY){
 			opt.priority = priority;
@@ -310,7 +310,7 @@ module.exports =  class Client extends Emitter{
 	_goOne(job){
 		let argv = job.opt;
 		let fn = job.next;
-		let priority = this._getPriority(job.hasOwnProperty('priority')?job.priority:DEFAULT_PRIORITY);
+		let priority = this._getPriority(Object.prototype.hasOwnProperty.call(job,'priority')?job.priority:DEFAULT_PRIORITY);
 		
 		let objJob = this.gearmanClient.submitJob(this.name+'_'+fn, JSON.stringify(argv),{background: false, priority:priority});
 		objJob.jobVO = job;
