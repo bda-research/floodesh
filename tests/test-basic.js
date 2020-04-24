@@ -5,13 +5,13 @@ const path = require('path');
 process.chdir(path.join(process.cwd(),'tests'));
 
 const should = require('should');
-const sinon = require('sinon');
-require('should-sinon');
-const App = require('./lib/client.js');
-const bottleneck = require('mof-bottleneck');
+//const sinon = require('sinon');
+//require('should-sinon');
+//const App = require('./lib/client.js');
+//const bottleneck = require('mof-bottleneck');
 const request = require('mof-request');
-const cheerio = require('mof-cheerio');
-const iconv = require('mof-iconv');
+//const cheerio = require('mof-cheerio');
+//const iconv = require('mof-iconv');
 const co = require('co');
 
 describe('Test worker in floodesh', ()=>{
